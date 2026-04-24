@@ -241,18 +241,29 @@ main.home {
 .invisible-word .outline {
   position: absolute;
   inset: 0;
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--ink);
+  color: var(--ink);
   pointer-events: none;
   opacity: 0;
-  clip-path: circle(0% at var(--mx) var(--my));
-  transition: opacity 260ms ease, clip-path 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* Soft radial mask tracks the cursor — word emerges only where the "fog" thins */
+  -webkit-mask-image: radial-gradient(
+    circle 200px at var(--mx) var(--my),
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.92) 22%,
+    rgba(0, 0, 0, 0) 78%
+  );
+  mask-image: radial-gradient(
+    circle 200px at var(--mx) var(--my),
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.92) 22%,
+    rgba(0, 0, 0, 0) 78%
+  );
+  filter: blur(0.2px);
+  transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .invisible-word:hover .outline,
 .invisible-word.force-reveal .outline {
   opacity: 1 !important;
-  clip-path: circle(140% at var(--mx) var(--my)) !important;
 }
 .invisible-word:hover .hint-underline,
 .invisible-word.force-reveal .hint-underline { opacity: 0; }

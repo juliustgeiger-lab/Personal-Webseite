@@ -15,9 +15,7 @@ export default function Home() {
           <span className="line">
             <InvisibleWord />
           </span>
-          <span className="line">
-            playground<span style={{ color: "var(--ink-faint)" }}>.</span>
-          </span>
+          <span className="line">playground</span>
         </h1>
 
         <p className="hero-sub">

@@ -2,20 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Must match the fog-reveal opacity transition duration in globals.css so the
-// outline fully fades back out before we swap the word — otherwise the alt word
-// (rendered with different, solid styles) flashes briefly during the fade.
+type WordState = "invisible" | "uncertain" | "unwritten";
+
+const FLOW: Record<WordState, WordState> = {
+  invisible: "uncertain",
+  uncertain: "unwritten",
+  unwritten: "invisible",
+};
+
+// Long enough for the previous state's fade-out to complete before swapping in
+// the next word. The fog fade is ~520ms; handwrite ends at opacity 0 already.
 const SWAP_DELAY_MS = 560;
 
-export default function InvisibleWord({
-  initialWord = "invisible",
-  altWord = "uncertain",
-}: {
-  initialWord?: string;
-  altWord?: string;
-}) {
+export default function InvisibleWord() {
   const ref = useRef<HTMLSpanElement>(null);
-  const [word, setWord] = useState(initialWord);
+  const [word, setWord] = useState<WordState>("invisible");
   const [forced, setForced] = useState(false);
   const hasHoveredRef = useRef(false);
   const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -41,18 +42,19 @@ export default function InvisibleWord({
 
     const onEnter = (e: MouseEvent) => {
       hasHoveredRef.current = true;
-      // If the user re-enters during the fade, cancel the pending swap.
+      // Cancel a pending swap if the user re-enters before it fires.
       clearSwap();
       setCursor(e);
     };
 
     const onLeave = () => {
-      // After the user has hovered once and fully left, schedule the swap so the
-      // fog reveal has time to fade out completely. A re-enter cancels it.
-      if (hasHoveredRef.current && word === initialWord) {
+      if (hasHoveredRef.current) {
+        hasHoveredRef.current = false;
         clearSwap();
+        // Wait for the current state's fade to finish before swapping in the
+        // next word — otherwise the new word (with different styles) flashes.
         swapTimerRef.current = setTimeout(() => {
-          setWord(altWord);
+          setWord((curr) => FLOW[curr]);
           swapTimerRef.current = null;
         }, SWAP_DELAY_MS);
       }
@@ -67,29 +69,28 @@ export default function InvisibleWord({
       el.removeEventListener("mousemove", setCursor);
       el.removeEventListener("mouseleave", onLeave);
     };
-  }, [word, initialWord, altWord]);
+  }, []);
 
-  const isGlitch = word !== initialWord;
+  const modeClass =
+    word === "uncertain"
+      ? " invisible-word--glitch"
+      : word === "unwritten"
+        ? " invisible-word--handwrite"
+        : "";
 
   return (
     <span
       ref={ref}
-      className={
-        "invisible-word" +
-        (forced ? " force-reveal" : "") +
-        (isGlitch ? " invisible-word--glitch" : "")
-      }
+      className={"invisible-word" + modeClass + (forced ? " force-reveal" : "")}
       onClick={() => setForced((v) => !v)}
     >
       <span className="ghost">{word}</span>
-      {/* Colored offset layers — only visible in glitch mode */}
       <span className="outline-glitch outline-glitch--r" aria-hidden="true">
         {word}
       </span>
       <span className="outline-glitch outline-glitch--c" aria-hidden="true">
         {word}
       </span>
-      {/* Main letterform: fog-glass by default, ink + shake in glitch mode */}
       <span className="outline" aria-hidden="true">
         {word}
       </span>

@@ -373,14 +373,16 @@ main.home {
   font-weight: 400;
 }
 
-/* ===== FUTURES (rotating word) ===== */
+/* ===== FUTURES (rotating word + Monte Carlo) ===== */
 section.futures {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 48px 32px 80px;
+  padding: 48px 32px 120px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 72px;
   position: relative;
   z-index: 2;
 }
@@ -431,6 +433,36 @@ section.futures {
 
 @keyframes caret-blink {
   50% { opacity: 0; }
+}
+
+/* Monte Carlo simulation */
+.mc-sim {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+}
+
+.mc-sim__canvas {
+  display: block;
+  width: 100%;
+  height: 220px;
+}
+
+.mc-sim__stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.mc-sim__pct {
+  color: var(--ink);
+  font-weight: 600;
 }
 
 /* ===== ESSAYS (work) ===== */

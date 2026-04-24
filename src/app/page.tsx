@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
 import InvisibleWord from "@/components/InvisibleWord";
 import RotatingWord from "@/components/RotatingWord";
+import MonteCarloSim from "@/components/MonteCarloSim";
 
 export default function Home() {
   const posts = getAllPosts().slice(0, 4);
@@ -45,6 +46,7 @@ export default function Home() {
             ]}
           />
         </h2>
+        <MonteCarloSim />
       </section>
 
       <section className="work" id="essays">

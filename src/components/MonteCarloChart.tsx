@@ -14,7 +14,11 @@ type Band = { start: number; end: number }; // 1-indexed rank bounds, inclusive
 const BAND_BY_WORD: Record<string, Band> = {
   catastrophic: { start: 1, end: 7 },
   regrettable: { start: 8, end: 27 },
+  mediocre: { start: 25, end: 45 },
   ok: { start: 26, end: 75 },
+  acceptable: { start: 40, end: 65 },
+  good: { start: 55, end: 80 },
+  great: { start: 76, end: 92 },
   exceptional: { start: 92, end: 100 },
 };
 

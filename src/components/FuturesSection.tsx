@@ -4,7 +4,16 @@ import { useState } from "react";
 import RotatingWord from "./RotatingWord";
 import MonteCarloChart from "./MonteCarloChart";
 
-const WORDS = ["exceptional", "ok", "regrettable", "catastrophic"];
+const WORDS = [
+  "exceptional",
+  "great",
+  "good",
+  "acceptable",
+  "ok",
+  "mediocre",
+  "regrettable",
+  "catastrophic",
+];
 
 export default function FuturesSection() {
   const [word, setWord] = useState<string>(WORDS[0]);

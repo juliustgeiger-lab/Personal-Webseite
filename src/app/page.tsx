@@ -9,15 +9,6 @@ export default function Home() {
   return (
     <main className="home">
       <section className="hero">
-        <div className="status">
-          <span className="pulse" />
-          <span>New essay every other Sunday</span>
-          <span className="sep">·</span>
-          <span className="mono" style={{ fontSize: 11 }}>
-            Vol. 01 · {new Date().getFullYear()}
-          </span>
-        </div>
-
         <h1 className="hero-headline">
           <span className="line">The future</span>
           <span className="line">is an</span>

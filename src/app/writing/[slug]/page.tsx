@@ -23,7 +23,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   if (!post) notFound();
 
   return (
-    <article className="space-y-8">
+    <article className="page-wrap space-y-8">
       <header className="space-y-3">
         <Link href="/writing" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
           ← Writing

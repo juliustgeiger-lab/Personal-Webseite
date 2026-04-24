@@ -9,7 +9,7 @@ export default function WritingIndex() {
   const posts = getAllPosts();
 
   return (
-    <div className="space-y-10">
+    <main className="page-wrap space-y-10">
       <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Writing</h1>
       {posts.length === 0 ? (
         <p className="text-zinc-500">No posts yet.</p>
@@ -37,7 +37,7 @@ export default function WritingIndex() {
           ))}
         </ul>
       )}
-    </div>
+    </main>
   );
 }
 

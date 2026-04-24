@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function Imprint() {
   return (
-    <div className="space-y-8">
+    <main className="page-wrap space-y-8">
       <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Imprint</h1>
 
       <section className="space-y-3 text-zinc-700 dark:text-zinc-300 leading-relaxed">
@@ -78,6 +78,6 @@ export default function Imprint() {
           redistribution requires the author&apos;s consent.
         </p>
       </section>
-    </div>
+    </main>
   );
 }

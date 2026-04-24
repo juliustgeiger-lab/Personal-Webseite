@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
@@ -8,14 +8,15 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Julius",
-  description: "Notes on decision making, value investing, and thinking under uncertainty.",
+  title: "Julius — Decision making, non-ergodic systems & bimodal strategies",
+  description:
+    "Writing on decision making under deep uncertainty, non-ergodic systems, and bimodal strategies.",
 };
 
 export default function RootLayout({
@@ -26,37 +27,62 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-zinc-900 dark:bg-black dark:text-zinc-100">
-        <header className="border-b border-zinc-200 dark:border-zinc-800">
-          <nav className="max-w-2xl mx-auto px-6 py-5 flex items-center justify-between">
-            <Link href="/" className="font-medium tracking-tight hover:opacity-70 transition-opacity">
-              Julius
+      <body className="min-h-full flex flex-col">
+        <nav className="top">
+          <Link href="/" className="brand">
+            <span className="dot">※</span>
+            <span>Julius</span>
+          </Link>
+          <div className="links">
+            <Link className="link" href="/writing">Essays</Link>
+            <Link className="link" href="/#topics">Topics</Link>
+            <Link className="link" href="/about">About</Link>
+            <Link href="/#subscribe" className="cta">
+              Subscribe
+              <span className="arrow">→</span>
             </Link>
-            <div className="flex gap-6 text-sm text-zinc-600 dark:text-zinc-400">
-              <Link href="/writing" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                Writing
-              </Link>
-              <Link href="/about" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                About
-              </Link>
+          </div>
+        </nav>
+
+        {children}
+
+        <footer className="site" id="subscribe">
+          <div className="footer-inner">
+            <div className="footer-grid">
+              <div>
+                <h3>
+                  Get the next essay in your <a href="mailto:hello@example.com">inbox →</a>
+                </h3>
+              </div>
+              <div className="col">
+                <span className="mono-up">Subscribe</span>
+                <a className="link" href="mailto:hello@example.com">
+                  Email newsletter <span className="arr">↗</span>
+                </a>
+                <a className="link" href="/writing">
+                  RSS feed <span className="arr">↗</span>
+                </a>
+              </div>
+              <div className="col">
+                <span className="mono-up">Elsewhere</span>
+                <a className="link" href="#">X / Twitter <span className="arr">↗</span></a>
+                <a className="link" href="#">LinkedIn <span className="arr">↗</span></a>
+                <a className="link" href="#">GitHub <span className="arr">↗</span></a>
+              </div>
+              <div className="col">
+                <span className="mono-up">Index</span>
+                <Link className="link" href="/writing">All essays <span className="arr">→</span></Link>
+                <Link className="link" href="/#topics">Topics <span className="arr">→</span></Link>
+                <Link className="link" href="/about">About <span className="arr">→</span></Link>
+                <Link className="link" href="/imprint">Imprint <span className="arr">→</span></Link>
+                <Link className="link" href="/privacy">Privacy <span className="arr">→</span></Link>
+              </div>
             </div>
-          </nav>
-        </header>
-        <main className="flex-1 max-w-2xl w-full mx-auto px-6 py-12 md:py-20">
-          {children}
-        </main>
-        <footer className="border-t border-zinc-200 dark:border-zinc-800">
-          <div className="max-w-2xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-zinc-500">
-            <span>© {new Date().getFullYear()} Julius</span>
-            <div className="flex gap-5">
-              <Link href="/imprint" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                Imprint
-              </Link>
-              <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                Privacy
-              </Link>
+            <div className="footer-bottom">
+              <span className="mono-up">© {new Date().getFullYear()} — Julius</span>
+              <span className="mono-up">Set in Geist &amp; JetBrains Mono</span>
             </div>
           </div>
         </footer>

@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function Privacy() {
   return (
-    <div className="space-y-8">
+    <main className="page-wrap space-y-8">
       <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Privacy Policy</h1>
 
       <section className="space-y-3 text-zinc-700 dark:text-zinc-300 leading-relaxed">
@@ -131,6 +131,6 @@ export default function Privacy() {
           or forms are added). Last updated: [DATE].
         </p>
       </section>
-    </div>
+    </main>
   );
 }

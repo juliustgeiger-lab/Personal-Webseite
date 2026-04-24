@@ -4,7 +4,7 @@ export const metadata = {
 
 export default function About() {
   return (
-    <div className="space-y-8">
+    <main className="page-wrap space-y-8">
       <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">About</h1>
       <div className="space-y-5 text-zinc-700 dark:text-zinc-300 leading-relaxed">
         <p>
@@ -26,6 +26,6 @@ export default function About() {
           .
         </p>
       </div>
-    </div>
+    </main>
   );
 }

@@ -5,7 +5,6 @@ import RotatingWord from "@/components/RotatingWord";
 
 export default function Home() {
   const posts = getAllPosts().slice(0, 4);
-  const essayCount = getAllPosts().length;
 
   return (
     <main className="home">
@@ -28,29 +27,6 @@ export default function Home() {
             Read the essays
             <span className="arrow">→</span>
           </Link>
-        </div>
-
-        <div className="hero-rail">
-          <div className="cell">
-            <span className="mono-up">Focus</span>
-            <div className="val">
-              Decision making <span className="tag">under uncertainty</span>
-            </div>
-          </div>
-          <div className="cell">
-            <span className="mono-up">Framework</span>
-            <div className="val">Non-ergodic systems</div>
-          </div>
-          <div className="cell">
-            <span className="mono-up">Method</span>
-            <div className="val">Bimodal strategies</div>
-          </div>
-          <div className="cell">
-            <span className="mono-up">Index</span>
-            <div className="val">
-              {essayCount} {essayCount === 1 ? "essay" : "essays"}
-            </div>
-          </div>
         </div>
       </section>
 

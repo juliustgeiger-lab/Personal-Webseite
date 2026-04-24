@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
 import InvisibleWord from "@/components/InvisibleWord";
+import RotatingWord from "@/components/RotatingWord";
 
 export default function Home() {
   const posts = getAllPosts().slice(0, 4);
@@ -10,12 +11,10 @@ export default function Home() {
     <main className="home">
       <section className="hero">
         <h1 className="hero-headline">
-          <span className="line">The future</span>
-          <span className="line">is an</span>
+          <span className="line">The future is</span>
           <span className="line">
             <InvisibleWord />
           </span>
-          <span className="line">playground</span>
         </h1>
 
         <p className="hero-sub">
@@ -53,6 +52,22 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="futures">
+        <h2 className="futures-headline">
+          In how many futures are your decisions{" "}
+          <RotatingWord
+            words={[
+              "great",
+              "exceptional",
+              "ok",
+              "acceptable",
+              "regrettable",
+              "catastrophic",
+            ]}
+          />
+        </h2>
       </section>
 
       <section className="work" id="essays">

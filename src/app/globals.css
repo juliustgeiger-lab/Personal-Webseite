@@ -288,6 +288,79 @@ main.home {
   pointer-events: none;
   opacity: 1;
 }
+
+/* ===== Glitch mode (post-first-hover) ===== */
+.outline-glitch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: none;
+  font: inherit;
+  color: var(--ink);
+}
+
+.invisible-word--glitch .outline-glitch {
+  display: inline-block;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.outline-glitch--r {
+  color: rgba(239, 68, 68, 0.85);
+}
+
+.outline-glitch--c {
+  color: rgba(99, 102, 241, 0.85);
+}
+
+/* In glitch mode the main outline drops the fog-mask and becomes a solid shake */
+.invisible-word--glitch .outline {
+  color: var(--ink);
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+  filter: none;
+  transition: opacity 120ms ease;
+}
+
+.invisible-word--glitch:hover .outline,
+.invisible-word--glitch.force-reveal .outline {
+  opacity: 1 !important;
+  animation: iw-glitch-shake 380ms steps(5) infinite;
+}
+
+.invisible-word--glitch:hover .outline-glitch--r,
+.invisible-word--glitch.force-reveal .outline-glitch--r {
+  opacity: 1;
+  animation: iw-glitch-r 480ms steps(6) infinite;
+}
+
+.invisible-word--glitch:hover .outline-glitch--c,
+.invisible-word--glitch.force-reveal .outline-glitch--c {
+  opacity: 1;
+  animation: iw-glitch-c 540ms steps(7) infinite;
+}
+
+@keyframes iw-glitch-shake {
+  0%, 100% { transform: translate(0, 0); clip-path: inset(0); }
+  20% { transform: translate(1px, -1px); clip-path: inset(28% 0 55% 0); }
+  40% { transform: translate(-2px, 1px); clip-path: inset(62% 0 14% 0); }
+  60% { transform: translate(1px, 2px); clip-path: inset(0); }
+  80% { transform: translate(-1px, -1px); clip-path: inset(18% 0 70% 0); }
+}
+
+@keyframes iw-glitch-r {
+  0%, 100% { transform: translate(0, 0); clip-path: inset(0); }
+  33% { transform: translate(-3px, 1px); clip-path: inset(24% 0 56% 0); }
+  66% { transform: translate(2px, -2px); clip-path: inset(52% 0 20% 0); }
+}
+
+@keyframes iw-glitch-c {
+  0%, 100% { transform: translate(0, 0); clip-path: inset(0); }
+  25% { transform: translate(3px, 0); clip-path: inset(48% 0 24% 0); }
+  75% { transform: translate(-2px, 2px); clip-path: inset(12% 0 64% 0); }
+}
 .invisible-word .scaffold .bracket {
   position: absolute;
   width: 10px;

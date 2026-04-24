@@ -41,7 +41,14 @@ export default function RotatingWord({
       if (text.length > 0) {
         t = setTimeout(() => setText(text.slice(0, -1)), deleteMs);
       } else {
-        setI((i + 1) % words.length);
+        // Pick a random next word different from the current one
+        let next = i;
+        if (words.length > 1) {
+          while (next === i) {
+            next = Math.floor(Math.random() * words.length);
+          }
+        }
+        setI(next);
         setPhase("typing");
         return;
       }

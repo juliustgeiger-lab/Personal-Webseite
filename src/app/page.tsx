@@ -103,18 +103,18 @@ export default function Home() {
           </div>
           <div className="principle">
             <span className="num">02</span>
-            <h3>Bimodal strategies.</h3>
+            <h3>Decisions under Uncertainty.</h3>
             <p>
-              Extreme safety paired with extreme exposure beats most middles. Convexity
-              is a design property, not a personality trait.
+              You rarely get probabilities. You get structure, incentives, and the shape
+              of ruin. Good decisions optimise for survival before return.
             </p>
           </div>
           <div className="principle">
             <span className="num">03</span>
-            <h3>Decisions under opacity.</h3>
+            <h3>Bimodal strategies.</h3>
             <p>
-              You rarely get probabilities. You get structure, incentives, and the shape
-              of ruin. Good decisions optimise for survival before return.
+              Extreme safety paired with extreme exposure beats most middles. Convexity
+              is a design property, not a personality trait.
             </p>
           </div>
         </div>

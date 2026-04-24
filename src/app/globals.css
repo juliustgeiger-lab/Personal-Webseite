@@ -408,9 +408,18 @@ section.futures {
   font-size: clamp(32px, 5.5vw, 72px);
   line-height: 1.15;
   letter-spacing: -0.03em;
-  color: var(--ink);
+  color: var(--ink-soft);
   text-align: center;
   max-width: 24ch;
+}
+
+.futures-headline .emph {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.04em;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 0.04em;
 }
 
 .rotating-word {

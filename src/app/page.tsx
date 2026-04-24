@@ -56,7 +56,8 @@ export default function Home() {
 
       <section className="futures">
         <h2 className="futures-headline">
-          In how many futures are your decisions{" "}
+          In how many futures are your{" "}
+          <em className="emph">decisions</em>{" "}
           <RotatingWord
             words={[
               "great",

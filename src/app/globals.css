@@ -170,7 +170,7 @@ main.home {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 220px);
+  min-height: calc(100vh - 120px);
 }
 
 /* Status pill */
@@ -408,7 +408,7 @@ section.futures {
   font-size: clamp(32px, 5.5vw, 72px);
   line-height: 1.15;
   letter-spacing: -0.03em;
-  color: var(--ink-soft);
+  color: var(--ink);
   text-align: center;
   max-width: 24ch;
 }
@@ -418,8 +418,6 @@ section.futures {
   font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.04em;
-  border-bottom: 2px solid var(--ink);
-  padding-bottom: 0.04em;
 }
 
 .rotating-word {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
 import InvisibleWord from "@/components/InvisibleWord";
+import PresentSection from "@/components/PresentSection";
 import FuturesSection from "@/components/FuturesSection";
 
 export default function Home() {
@@ -29,6 +30,8 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      <PresentSection />
 
       <FuturesSection />
 

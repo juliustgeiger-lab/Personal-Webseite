@@ -18,13 +18,6 @@ const BAND_BY_WORD: Record<string, Band> = {
   exceptional: { start: 92, end: 100 },
 };
 
-const CAPTION_BY_WORD: Record<string, (n: number) => string> = {
-  catastrophic: (n) => `${n} of 100 futures end in ruin`,
-  regrettable: (n) => `${n} of 100 futures are regrettable`,
-  ok: (n) => `${n} of 100 futures are ok`,
-  exceptional: (n) => `${n} of 100 futures are exceptional`,
-};
-
 function mulberry32(seed: number) {
   let a = seed >>> 0;
   return function () {
@@ -68,10 +61,11 @@ export default function MonteCarloChart({ activeWord }: { activeWord: string }) 
 
   const trajectories = useMemo(() => generateTrajectories(seed), [seed]);
 
-  // Rank each trajectory 1..N by its final y ascending (rank 1 = lowest final, worst outcome).
+  // Rank each trajectory 1..N by its final y descending (SVG y grows downward, so largest final y
+  // = bottom of chart = worst outcome = rank 1). Positive outcomes end at the top.
   const ranks = useMemo(() => {
     const indexed = trajectories.map((ys, idx) => ({ idx, final: ys[ys.length - 1] }));
-    indexed.sort((a, b) => a.final - b.final);
+    indexed.sort((a, b) => b.final - a.final);
     const out = new Array<number>(N_PATHS);
     indexed.forEach((item, i) => {
       out[item.idx] = i + 1;
@@ -82,8 +76,6 @@ export default function MonteCarloChart({ activeWord }: { activeWord: string }) 
   const pathsD = useMemo(() => trajectories.map(buildPathD), [trajectories]);
 
   const band = BAND_BY_WORD[activeWord];
-  const count = band ? band.end - band.start + 1 : 0;
-  const caption = CAPTION_BY_WORD[activeWord]?.(count) ?? `${count} of 100 futures`;
 
   return (
     <div className="mc-chart">
@@ -111,8 +103,6 @@ export default function MonteCarloChart({ activeWord }: { activeWord: string }) 
         <span className="mono-up">NOW</span>
         <span className="mono-up">HORIZON</span>
       </div>
-
-      <div className="mc-chart__caption">{caption}</div>
 
       <button
         type="button"

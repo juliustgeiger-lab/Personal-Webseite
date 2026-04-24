@@ -490,14 +490,6 @@ section.futures {
   padding: 4px 2px 0;
 }
 
-.mc-chart__caption {
-  margin-top: 14px;
-  text-align: center;
-  font-size: 14px;
-  color: var(--ink-soft);
-  font-variant-numeric: tabular-nums;
-}
-
 .mc-chart__resample {
   align-self: center;
   margin-top: 10px;

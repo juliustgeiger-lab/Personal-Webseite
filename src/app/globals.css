@@ -272,29 +272,12 @@ main.home {
 .invisible-word.force-reveal .outline {
   opacity: 1 !important;
 }
-.invisible-word:hover .hint-underline,
-.invisible-word.force-reveal .hint-underline { opacity: 0; }
-.invisible-word:hover .scaffold,
-.invisible-word.force-reveal .scaffold { opacity: 1; }
-
-.invisible-word .hint-underline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 6%;
-  height: 0;
-  border-bottom: 1.5px dashed var(--ink-faint);
-  opacity: 0.6;
-  transition: opacity 180ms ease;
-  pointer-events: none;
-}
 
 .invisible-word .scaffold {
   position: absolute;
   inset: -8px -8px -8px -8px;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 260ms ease 80ms;
+  opacity: 1;
 }
 .invisible-word .scaffold .bracket {
   position: absolute;

@@ -36,7 +36,6 @@ export default function InvisibleWord({ word = "invisible" }: { word?: string })
       <span className="outline" aria-hidden="true">
         {word}
       </span>
-      <span className="hint-underline" />
       <span className="scaffold">
         <span className="bracket tl" />
         <span className="bracket tr" />

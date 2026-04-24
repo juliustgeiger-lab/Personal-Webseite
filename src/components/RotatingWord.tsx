@@ -48,6 +48,7 @@ export default function RotatingWord({
     <span className="rotating-word" aria-live="polite">
       <span className="rotating-word__text">{text}</span>
       <span className="rotating-word__caret" aria-hidden="true" />
+      <span className="rotating-word__text" aria-hidden="true">?</span>
     </span>
   );
 }

@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
 import InvisibleWord from "@/components/InvisibleWord";
-import RotatingWord from "@/components/RotatingWord";
-import MonteCarloSim from "@/components/MonteCarloSim";
+import FuturesSection from "@/components/FuturesSection";
 
 export default function Home() {
   const posts = getAllPosts().slice(0, 4);
@@ -31,23 +30,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="futures">
-        <h2 className="futures-headline">
-          In how many futures are your{" "}
-          <em className="emph">decisions</em>{" "}
-          <RotatingWord
-            words={[
-              "great",
-              "exceptional",
-              "ok",
-              "acceptable",
-              "regrettable",
-              "catastrophic",
-            ]}
-          />
-        </h2>
-        <MonteCarloSim />
-      </section>
+      <FuturesSection />
 
       <section className="work" id="essays">
         <div className="section-head">

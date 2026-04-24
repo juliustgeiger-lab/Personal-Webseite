@@ -9,15 +9,21 @@ export default function RotatingWord({
   typeMs = 85,
   deleteMs = 40,
   holdMs = 1400,
+  onChange,
 }: {
   words: string[];
   typeMs?: number;
   deleteMs?: number;
   holdMs?: number;
+  onChange?: (word: string) => void;
 }) {
   const [i, setI] = useState(0);
   const [text, setText] = useState("");
   const [phase, setPhase] = useState<Phase>("typing");
+
+  useEffect(() => {
+    onChange?.(words[i]);
+  }, [i, words, onChange]);
 
   useEffect(() => {
     const current = words[i];

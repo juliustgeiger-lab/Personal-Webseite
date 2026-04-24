@@ -29,10 +29,6 @@ export default function Home() {
             Read the essays
             <span className="arrow">→</span>
           </Link>
-          <Link href="#subscribe" className="btn btn-ghost">
-            Subscribe
-            <span className="kbd">⌘K</span>
-          </Link>
         </div>
 
         <div className="hero-rail">

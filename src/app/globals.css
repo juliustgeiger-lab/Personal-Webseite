@@ -241,7 +241,12 @@ main.home {
 .invisible-word .outline {
   position: absolute;
   inset: 0;
-  color: var(--ink);
+  /* Glass look: near-transparent tint + delicate hairline edges */
+  color: rgba(10, 10, 10, 0.06);
+  -webkit-text-stroke: 1px rgba(10, 10, 10, 0.45);
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5),
+    0 -0.5px 0 rgba(10, 10, 10, 0.06);
   pointer-events: none;
   opacity: 0;
   /* Soft radial mask tracks the cursor — word emerges only where the "fog" thins */

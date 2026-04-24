@@ -279,7 +279,7 @@ main.home {
 
 .invisible-word:hover .outline,
 .invisible-word.force-reveal .outline {
-  opacity: 1 !important;
+  opacity: 1;
 }
 
 .invisible-word .scaffold {
@@ -326,40 +326,63 @@ main.home {
 
 .invisible-word--glitch:hover .outline,
 .invisible-word--glitch.force-reveal .outline {
-  opacity: 1 !important;
-  animation: iw-glitch-shake 380ms steps(5) infinite;
+  opacity: 1;
+  animation:
+    iw-glitch-shake 1100ms steps(7) infinite,
+    iw-flicker 2.3s linear infinite;
 }
 
 .invisible-word--glitch:hover .outline-glitch--r,
 .invisible-word--glitch.force-reveal .outline-glitch--r {
   opacity: 1;
-  animation: iw-glitch-r 480ms steps(6) infinite;
+  animation:
+    iw-glitch-r 1300ms steps(9) infinite,
+    iw-flicker 2.1s linear infinite 150ms;
 }
 
 .invisible-word--glitch:hover .outline-glitch--c,
 .invisible-word--glitch.force-reveal .outline-glitch--c {
   opacity: 1;
-  animation: iw-glitch-c 540ms steps(7) infinite;
+  animation:
+    iw-glitch-c 1450ms steps(11) infinite,
+    iw-flicker 2.7s linear infinite 300ms;
 }
 
 @keyframes iw-glitch-shake {
   0%, 100% { transform: translate(0, 0); clip-path: inset(0); }
-  20% { transform: translate(1px, -1px); clip-path: inset(28% 0 55% 0); }
-  40% { transform: translate(-2px, 1px); clip-path: inset(62% 0 14% 0); }
-  60% { transform: translate(1px, 2px); clip-path: inset(0); }
-  80% { transform: translate(-1px, -1px); clip-path: inset(18% 0 70% 0); }
+  15% { transform: translate(2px, -1px); clip-path: inset(28% 0 55% 0); }
+  30% { transform: translate(-3px, 2px); clip-path: inset(62% 0 14% 0); }
+  45% { transform: translate(1px, 3px); clip-path: inset(0); }
+  60% { transform: translate(-2px, -2px); clip-path: inset(18% 0 70% 0); }
+  75% { transform: translate(3px, 1px); clip-path: inset(48% 0 28% 0); }
+  90% { transform: translate(-1px, -3px); clip-path: inset(0); }
 }
 
 @keyframes iw-glitch-r {
   0%, 100% { transform: translate(0, 0); clip-path: inset(0); }
-  33% { transform: translate(-3px, 1px); clip-path: inset(24% 0 56% 0); }
-  66% { transform: translate(2px, -2px); clip-path: inset(52% 0 20% 0); }
+  20% { transform: translate(-9px, 3px); clip-path: inset(22% 0 58% 0); }
+  40% { transform: translate(7px, -4px); clip-path: inset(54% 0 22% 0); }
+  60% { transform: translate(-6px, 2px); clip-path: inset(10% 0 70% 0); }
+  80% { transform: translate(8px, -1px); clip-path: inset(66% 0 14% 0); }
 }
 
 @keyframes iw-glitch-c {
   0%, 100% { transform: translate(0, 0); clip-path: inset(0); }
-  25% { transform: translate(3px, 0); clip-path: inset(48% 0 24% 0); }
-  75% { transform: translate(-2px, 2px); clip-path: inset(12% 0 64% 0); }
+  25% { transform: translate(10px, 1px); clip-path: inset(46% 0 24% 0); }
+  50% { transform: translate(-8px, 3px); clip-path: inset(12% 0 68% 0); }
+  75% { transform: translate(6px, -3px); clip-path: inset(60% 0 18% 0); }
+}
+
+/* Uneven opacity flicker — creates an unstable, unreliable feeling */
+@keyframes iw-flicker {
+  0%, 4%, 12%, 22%, 38%, 52%, 68%, 82%, 94%, 100% { opacity: 1; }
+  6% { opacity: 0.25; }
+  14% { opacity: 0.6; }
+  28% { opacity: 0.15; }
+  42% { opacity: 0.7; }
+  58% { opacity: 0.3; }
+  72% { opacity: 0.5; }
+  86% { opacity: 0.2; }
 }
 .invisible-word .scaffold .bracket {
   position: absolute;

@@ -51,11 +51,11 @@ export default function RootLayout({
           <div className="max-w-2xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-zinc-500">
             <span>© {new Date().getFullYear()} Julius</span>
             <div className="flex gap-5">
-              <Link href="/impressum" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                Impressum
+              <Link href="/imprint" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                Imprint
               </Link>
-              <Link href="/datenschutz" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-                Datenschutz
+              <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+                Privacy
               </Link>
             </div>
           </div>

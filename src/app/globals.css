@@ -601,16 +601,15 @@ section.present {
   max-width: 24ch;
 }
 
-/* Bridge from the hero — same size as the rest of the headline, but in
-   Caveat (casual notebook hand) so it reads as a quick written aside,
-   without Sacramento's cursive flourish. */
+/* Bridge from the hero — typeset in the same Geist as the rest of the
+   headline, just on its own line. */
 .present-headline__lead {
   display: block;
-  font-family: var(--font-architects), cursive;
-  font-weight: 600;
-  font-style: normal;
-  letter-spacing: 0;
-  color: var(--ink);
+  font-family: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  letter-spacing: inherit;
+  color: inherit;
   line-height: 1;
   margin-bottom: 0.18em;
 }
@@ -757,11 +756,11 @@ section.many-worlds {
 
 .many-worlds-headline__lead {
   display: block;
-  font-family: var(--font-architects), cursive;
-  font-weight: 600;
-  font-style: normal;
-  letter-spacing: 0;
-  color: var(--ink);
+  font-family: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  letter-spacing: inherit;
+  color: inherit;
   line-height: 1;
   margin-bottom: 0.18em;
 }

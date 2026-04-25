@@ -12,11 +12,11 @@ const NOW_X = VIEW_W / 2;
 const NOW_Y = VIEW_H / 2;
 
 const QUESTIONS = [
-  "Propose or break up?",
-  "Have the hard conversation tonight or let it slide?",
+  "Propose or stop wasting their time?",
+  "Have the hard conversation or let it slide?",
   "Stay in the relationship or leave?",
-  "Fight for it or admit it's over?",
-  "Say what you really feel or keep the peace?",
+  "Keep fighting or admit defeat?",
+  "Say what you feel or keep the peace?",
   "Tell them about it or take it to the grave?",
   "Take the buyout or keep building?",
   "Stay in corporate or chase the dream?",
@@ -27,8 +27,8 @@ const QUESTIONS = [
   "Sell now or hold through the dip?",
   "Bail them out again or let them fail?",
   "Pull the plug or hold on a little longer?",
-  "Get tested or keep not knowing?",
-  "Have a kid now or pursue the career?",
+  "Get the genetic test or keep not knowing?",
+  "Have a kid now or keep pursuing the career?",
 ];
 
 const QUESTION_DISPLAY_MS = 4800;

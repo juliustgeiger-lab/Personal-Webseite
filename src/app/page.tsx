@@ -3,7 +3,7 @@ import { getAllPosts } from "@/lib/posts";
 import InvisibleWord from "@/components/InvisibleWord";
 import ScrollCue from "@/components/ScrollCue";
 import PresentSection from "@/components/PresentSection";
-import FuturesSection from "@/components/FuturesSection";
+import ManyWorldsSection from "@/components/ManyWorldsSection";
 
 export default function Home() {
   const posts = getAllPosts().slice(0, 4);
@@ -23,7 +23,7 @@ export default function Home() {
 
       <PresentSection />
 
-      <FuturesSection />
+      <ManyWorldsSection />
 
       <section className="work" id="essays">
         <div className="section-head">

@@ -606,17 +606,19 @@ section.present {
   max-width: 24ch;
 }
 
-/* Bridge from the hero — typeset in the same Geist as the rest of the
-   headline, just on its own line. */
-.present-headline__lead {
+/* Bridge from the previous block — sits modestly above the headline.
+   Tiny, grey, same Geist family, no negative letter-spacing crowding. */
+.present-headline__lead,
+.many-worlds-headline__lead {
   display: block;
   font-family: inherit;
-  font-weight: inherit;
+  font-weight: 400;
   font-style: inherit;
-  letter-spacing: inherit;
-  color: inherit;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+  font-size: 0.22em;
   line-height: 1;
-  margin-bottom: 0.18em;
+  margin-bottom: 1.4em;
 }
 
 .present-canvas {
@@ -759,16 +761,7 @@ section.many-worlds {
   max-width: 24ch;
 }
 
-.many-worlds-headline__lead {
-  display: block;
-  font-family: inherit;
-  font-weight: inherit;
-  font-style: inherit;
-  letter-spacing: inherit;
-  color: inherit;
-  line-height: 1;
-  margin-bottom: 0.18em;
-}
+/* (.many-worlds-headline__lead is styled with .present-headline__lead above) */
 
 .many-worlds-svg {
   width: min(760px, 100%);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const VIEW_W = 760;
 // viewBox aspect must match the rendered CSS aspect (760×280) — otherwise
@@ -18,15 +18,14 @@ const QUESTIONS = [
   "Fight for it or admit it's over?",
   "Say what you really feel or keep the peace?",
   "Tell them about it or take it to the grave?",
-  "Marry the safe one or wait for the one who really excites you?",
   "Take the buyout or keep building?",
-  "Stay in the corporate job or chase the dream?",
+  "Stay in corporate or chase the dream?",
   "Buy the company or watch someone else buy it?",
   "Pivot or persist?",
   "Stay loyal or take the better offer?",
   "Cut your losses or double down?",
   "Sell now or hold through the dip?",
-  "Bail them out again or let them fall?",
+  "Bail them out again or let them fail?",
   "Pull the plug or hold on a little longer?",
   "Get tested or keep not knowing?",
   "Have a kid now or pursue the career?",
@@ -35,26 +34,52 @@ const QUESTIONS = [
 const QUESTION_DISPLAY_MS = 4800;
 const QUESTION_FADE_MS = 380;
 
+// Fisher–Yates shuffle of [0..n-1].
+function shuffledIndices(n: number): number[] {
+  const arr = Array.from({ length: n }, (_, i) => i);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 export default function PresentSection() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [questionVisible, setQuestionVisible] = useState(true);
 
-  // Question rotation: fade out, swap, fade back in.
+  // Shuffled deck pattern: walk through the full set in a random order, then
+  // reshuffle once exhausted. No question repeats until every other has shown.
+  const orderRef = useRef<number[]>([]);
+  const posRef = useRef(0);
+
+  // Question rotation: fade out, advance through the shuffled deck, fade in.
   useEffect(() => {
+    // Initial shuffle on mount, replacing the SSR-rendered first question.
+    const initial = shuffledIndices(QUESTIONS.length);
+    orderRef.current = initial;
+    posRef.current = 0;
+    setQuestionIndex(initial[0]);
+
     let fadeTimer: ReturnType<typeof setTimeout> | null = null;
     const interval = setInterval(() => {
       setQuestionVisible(false);
       fadeTimer = setTimeout(() => {
-        setQuestionIndex((i) => {
-          // Pick a random next question different from the current one.
-          let next = i;
-          if (QUESTIONS.length > 1) {
-            while (next === i) {
-              next = Math.floor(Math.random() * QUESTIONS.length);
-            }
+        let nextPos = posRef.current + 1;
+        if (nextPos >= orderRef.current.length) {
+          // Deck exhausted — reshuffle, but make sure the first card of the
+          // new deck isn't the same as the one we just showed.
+          const lastShown =
+            orderRef.current[orderRef.current.length - 1];
+          let fresh = shuffledIndices(QUESTIONS.length);
+          if (fresh.length > 1 && fresh[0] === lastShown) {
+            [fresh[0], fresh[1]] = [fresh[1], fresh[0]];
           }
-          return next;
-        });
+          orderRef.current = fresh;
+          nextPos = 0;
+        }
+        posRef.current = nextPos;
+        setQuestionIndex(orderRef.current[nextPos]);
         setQuestionVisible(true);
       }, QUESTION_FADE_MS);
     }, QUESTION_DISPLAY_MS + QUESTION_FADE_MS);

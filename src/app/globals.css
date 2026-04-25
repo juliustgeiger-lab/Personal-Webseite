@@ -640,7 +640,7 @@ section.present {
    shifted up via transform so its tail almost touches the dot. */
 .present-bubble {
   position: absolute;
-  width: clamp(320px, 44vw, 460px);
+  width: clamp(380px, 52vw, 560px);
   background: var(--bg);
   border: 1px solid var(--rule);
   border-radius: 22px;

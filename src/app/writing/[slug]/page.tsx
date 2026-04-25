@@ -2,6 +2,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllPosts, getPost } from "@/lib/posts";
+import FuturesSimulation from "@/components/FuturesSimulation";
+
+// Components MDX posts can use directly (e.g. <FuturesSimulation />).
+const mdxComponents = {
+  FuturesSimulation,
+};
 
 export function generateStaticParams() {
   return getAllPosts().map((p) => ({ slug: p.slug }));
@@ -36,7 +42,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         </time>
       </header>
       <div className="prose-content">
-        <MDXRemote source={post.content} />
+        <MDXRemote source={post.content} components={mdxComponents} />
       </div>
     </article>
   );

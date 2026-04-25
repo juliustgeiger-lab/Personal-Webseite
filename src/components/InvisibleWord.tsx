@@ -11,27 +11,18 @@ const FLOW: Record<WordState, WordState> = {
   unwritten: "invisible",
 };
 
-// Long enough for the previous state's fade-out to complete before swapping in
-// the next word. The fog fade is ~520ms; handwrite ends at opacity 0 already.
-const SWAP_DELAY_MS = 560;
-
 export default function InvisibleWord() {
   const ref = useRef<HTMLSpanElement>(null);
   const [word, setWord] = useState<WordState>("invisible");
   const [forced, setForced] = useState(false);
+  // Set on mouseleave (after a real hover); the next mouseenter consumes it
+  // and advances the cycle. No auto-timers — every transition needs a hover.
+  const pendingAdvanceRef = useRef(false);
   const hasHoveredRef = useRef(false);
-  const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
-    const clearSwap = () => {
-      if (swapTimerRef.current) {
-        clearTimeout(swapTimerRef.current);
-        swapTimerRef.current = null;
-      }
-    };
 
     const setCursor = (e: MouseEvent) => {
       const rect = el.getBoundingClientRect();
@@ -42,22 +33,20 @@ export default function InvisibleWord() {
     };
 
     const onEnter = (e: MouseEvent) => {
-      hasHoveredRef.current = true;
-      // Cancel a pending swap if the user re-enters before it fires.
-      clearSwap();
       setCursor(e);
+      // If the user previously hovered & left, advance to the next word now,
+      // before the new state's hover effect plays.
+      if (pendingAdvanceRef.current) {
+        pendingAdvanceRef.current = false;
+        setWord((curr) => FLOW[curr]);
+      }
+      hasHoveredRef.current = true;
     };
 
     const onLeave = () => {
       if (hasHoveredRef.current) {
         hasHoveredRef.current = false;
-        clearSwap();
-        // Wait for the current state's fade to finish before swapping in the
-        // next word — otherwise the new word (with different styles) flashes.
-        swapTimerRef.current = setTimeout(() => {
-          setWord((curr) => FLOW[curr]);
-          swapTimerRef.current = null;
-        }, SWAP_DELAY_MS);
+        pendingAdvanceRef.current = true;
       }
     };
 
@@ -65,7 +54,6 @@ export default function InvisibleWord() {
     el.addEventListener("mousemove", setCursor);
     el.addEventListener("mouseleave", onLeave);
     return () => {
-      clearSwap();
       el.removeEventListener("mouseenter", onEnter);
       el.removeEventListener("mousemove", setCursor);
       el.removeEventListener("mouseleave", onLeave);

@@ -352,59 +352,79 @@ main.home {
   visibility: visible;
 }
 
-/* ===== Handwrite mode (for "unwritten") ===== */
+/* ===== Handwrite mode (for "unwritten") =====
+   Cursive script in fountain-pen ink; the cursor becomes a black fountain pen
+   that "writes" the word left-to-right via clip-path; the ink then dries
+   slowly into invisibility (long opacity ramp + light desaturation + faint
+   blur to simulate fading ink). */
+
 .invisible-word--handwrite {
-  font-family: var(--font-caveat), cursive;
-  cursor: url("/pen.svg") 4 28, crosshair;
-  /* Caveat is tighter than Geist — slight visual adjustment */
-  font-weight: 600;
+  font-family: var(--font-sacramento), cursive;
+  cursor: url("/pen.svg") 2 42, crosshair;
+  /* Sacramento sits low on the line; nudge slightly to align with the rest of
+     the headline visually. */
+  line-height: 0.9;
 }
 
-/* The ghost carries the width; in handwrite mode it also uses Caveat so the
-   scaffold brackets fit the actual rendered word, not the Geist word. */
 .invisible-word--handwrite .ghost {
-  font-family: var(--font-caveat), cursive;
-  font-weight: 600;
+  font-family: var(--font-sacramento), cursive;
 }
 
 .invisible-word--handwrite .outline {
-  color: #2563eb;
+  color: #050505;
   -webkit-text-stroke: 0;
   text-shadow: none;
   -webkit-mask-image: none;
   mask-image: none;
   filter: none;
-  font-family: var(--font-caveat), cursive;
-  font-weight: 600;
+  font-family: var(--font-sacramento), cursive;
   opacity: 0;
   transition: opacity 200ms ease;
 }
 
-.invisible-word--handwrite .outline-glitch {
-  display: none !important;
-}
-
 .invisible-word--handwrite:hover .outline,
 .invisible-word--handwrite.force-reveal .outline {
-  animation: iw-handwrite 1500ms cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  animation: iw-handwrite 3800ms cubic-bezier(0.32, 0.72, 0.4, 1) forwards;
 }
 
 @keyframes iw-handwrite {
+  /* 0–35% : pen writes left-to-right (~1.3s) */
   0% {
     opacity: 1;
-    clip-path: inset(-20% 100% -20% 0);
+    clip-path: inset(-25% 100% -25% 0);
+    color: #050505;
+    filter: blur(0);
   }
-  45% {
+  35% {
     opacity: 1;
-    clip-path: inset(-20% 0% -20% 0);
+    clip-path: inset(-25% 0% -25% 0);
+    color: #050505;
+    filter: blur(0);
   }
+  /* 35–48% : freshly written, glossy black ink, holds */
+  48% {
+    opacity: 1;
+    clip-path: inset(-25% 0% -25% 0);
+    color: #0a0a0a;
+    filter: blur(0);
+  }
+  /* 48–100% : ink slowly dries — colour drifts toward grey, opacity fades,
+     a faint blur creeps in like the pigment is bleeding into the paper */
   70% {
-    opacity: 0.95;
-    clip-path: inset(-20% 0% -20% 0);
+    opacity: 0.7;
+    color: #2c2c2c;
+    filter: blur(0.25px);
+  }
+  85% {
+    opacity: 0.32;
+    color: #5a5a5a;
+    filter: blur(0.45px);
   }
   100% {
     opacity: 0;
-    clip-path: inset(-20% 0% -20% 0);
+    color: #8c8c8c;
+    filter: blur(0.7px);
+    clip-path: inset(-25% 0% -25% 0);
   }
 }
 .invisible-word .scaffold .bracket {

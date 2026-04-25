@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, JetBrains_Mono, Sacramento } from "next/font/google";
+import { Geist, JetBrains_Mono, Sacramento, Caveat } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
@@ -19,6 +19,12 @@ const sacramento = Sacramento({
   weight: "400",
 });
 
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["500", "600"],
+});
+
 export const metadata: Metadata = {
   title: "Julius — Decision making, non-ergodic systems & bimodal strategies",
   description:
@@ -33,7 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${jetbrainsMono.variable} ${sacramento.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${jetbrainsMono.variable} ${sacramento.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <nav className="top">

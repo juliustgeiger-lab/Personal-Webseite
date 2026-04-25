@@ -616,7 +616,7 @@ section.present {
   font-style: italic;
   letter-spacing: 0;
   color: var(--ink-soft);
-  font-size: 0.28em;
+  font-size: 0.35em;
   line-height: 1;
   margin-bottom: 1.3em;
 }

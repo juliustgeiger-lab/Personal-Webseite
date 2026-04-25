@@ -4,12 +4,11 @@ import { useMemo } from "react";
 import TypewriterText from "./TypewriterText";
 
 const ENDINGS = [
-  "the face of uncertainty",
-  "many parallel universes",
-  "worlds we didn't predict",
-  "systems we don't control",
-  "the tails of distributions",
-  "turbulent waters",
+  "the face of uncertainty.",
+  "many parallel universes.",
+  "futures we didn't predict.",
+  "systems we don't control.",
+  "the tails of distributions.",
 ];
 
 const VIEW_W = 760;

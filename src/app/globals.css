@@ -668,8 +668,9 @@ section.present {
 
 .present-bubble__text {
   margin: 0;
-  font-size: 17px;
-  line-height: 1.5;
+  font-size: 21px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
   color: var(--ink);
 }
 

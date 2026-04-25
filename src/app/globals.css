@@ -382,55 +382,59 @@ main.home {
 .invisible-word--handwrite .uw-text {
   font-family: var(--font-sacramento), cursive;
   font-weight: 400;
-  fill: #050505;
-  fill-opacity: 0;
-  stroke: #050505;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 7500;
-  stroke-dashoffset: 7500;
+  fill: #1e3a8a;          /* fountain-pen ink blue */
+  fill-opacity: 1;
+}
+
+/* The pen path is what's actually animated — its stroke (very thick) acts as
+   the mask that reveals the text underneath. pathLength=100 means dasharray
+   and dashoffset are interpreted relative to 100 regardless of actual path. */
+.invisible-word--handwrite .uw-pen-path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+.invisible-word--handwrite:hover .uw-pen-path,
+.invisible-word--handwrite.force-reveal .uw-pen-path {
+  animation: uw-pen-stroke 2400ms cubic-bezier(0.4, 0.1, 0.6, 0.95) forwards;
 }
 
 .invisible-word--handwrite:hover .uw-text,
 .invisible-word--handwrite.force-reveal .uw-text {
-  animation: uw-handwrite 4000ms cubic-bezier(0.4, 0.1, 0.6, 0.95) forwards;
+  animation: uw-dry 2200ms cubic-bezier(0.32, 0.72, 0.4, 1) 2400ms forwards;
 }
 
-/* Variable-speed stroke draw, then fill, then dry. The stroke-dashoffset
-   keyframes map to the rough sections of the cursive word — quicker through
-   simple strokes (u, n), slower through the zigzag of w and the looped e.
-   Path length is approximate; values tuned by eye. */
-@keyframes uw-handwrite {
-  0%   { stroke-dashoffset: 7500; fill-opacity: 0; stroke-opacity: 1; }
-
-  /* 'u' — opening downward curve, fast */
-  6%   { stroke-dashoffset: 6700; }
+/* Variable speed across the cursive word — fast through simple strokes,
+   slow through zigzag (w) and the small loop (e). Each percentage mark
+   targets the dashoffset value when the pen is at that letter section. */
+@keyframes uw-pen-stroke {
+  0%   { stroke-dashoffset: 100; }
+  /* 'u' — fast opening curve */
+  10%  { stroke-dashoffset: 88; }
   /* 'n' — moderate */
-  13%  { stroke-dashoffset: 6000; }
-  /* 'w' — multi-stroke zigzag, slower */
-  22%  { stroke-dashoffset: 5100; }
-  29%  { stroke-dashoffset: 4400; }
-  /* 'r' — small bump */
-  34%  { stroke-dashoffset: 3900; }
-  /* 'i' — single stroke + dot, quick */
-  37%  { stroke-dashoffset: 3600; }
-  /* first 't' — downstroke + crossbar */
-  43%  { stroke-dashoffset: 3050; }
-  /* second 't' — slightly faster (muscle-memory repeat) */
-  48%  { stroke-dashoffset: 2550; }
-  /* 'e' — small interior loop, slower */
-  54%  { stroke-dashoffset: 2000; }
+  20%  { stroke-dashoffset: 76; }
+  /* 'w' — slower (multi-stroke zigzag) */
+  37%  { stroke-dashoffset: 58; }
+  /* 'r' */
+  46%  { stroke-dashoffset: 50; }
+  /* 'i' — quick */
+  50%  { stroke-dashoffset: 45; }
+  /* first 't' — moderate (downstroke + jump up) */
+  58%  { stroke-dashoffset: 35; }
+  /* second 't' — slightly quicker repeat */
+  67%  { stroke-dashoffset: 26; }
+  /* 'e' — slower (loop) */
+  80%  { stroke-dashoffset: 15; }
   /* final 'n' + trailing flourish */
-  60%  { stroke-dashoffset: 0; fill-opacity: 0; stroke-opacity: 1; }
+  100% { stroke-dashoffset: 0; }
+}
 
-  /* Ink settles into the strokes — outline gives way to filled glyphs */
-  70%  { stroke-dashoffset: 0; fill-opacity: 1; stroke-opacity: 0; }
-
-  /* Drying — pigment fades unevenly */
-  82%  { fill-opacity: 0.55; }
-  92%  { fill-opacity: 0.18; }
-  100% { fill-opacity: 0; }
+/* Ink dries — fades unevenly with a faint blur, like pigment soaking in. */
+@keyframes uw-dry {
+  0%   { fill-opacity: 1; filter: blur(0); }
+  40%  { fill-opacity: 0.6; filter: blur(0.2px); }
+  75%  { fill-opacity: 0.2; filter: blur(0.4px); }
+  100% { fill-opacity: 0; filter: blur(0.6px); }
 }
 .invisible-word .scaffold .bracket {
   position: absolute;

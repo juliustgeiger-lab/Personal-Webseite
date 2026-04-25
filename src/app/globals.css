@@ -593,6 +593,17 @@ section.present {
   max-width: 24ch;
 }
 
+/* Quiet bridge from the hero — "Yet…" set small, italic, faded ink */
+.present-headline__lead {
+  display: block;
+  font-size: 0.34em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-soft);
+  margin-bottom: 0.5em;
+}
+
 .present-canvas {
   position: relative;
   width: min(760px, 100%);

@@ -175,7 +175,9 @@ main.home {
 .hero {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 32px;
+  /* Heavier bottom padding pulls the centred headline visually upward in the
+     viewport while leaving room for the scroll cue at the bottom. */
+  padding: 0 32px 14vh;
   position: relative;
   text-align: center;
   display: flex;

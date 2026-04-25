@@ -38,14 +38,8 @@ export default function TypewriterText({
       if (text.length > 0) {
         t = setTimeout(() => setText(text.slice(0, -1)), deleteMs);
       } else {
-        // Pick a random next phrase, never the same as the current one.
-        let next = i;
-        if (phrases.length > 1) {
-          while (next === i) {
-            next = Math.floor(Math.random() * phrases.length);
-          }
-        }
-        setI(next);
+        // Walk the phrases in order; loop back to the start at the end.
+        setI((curr) => (curr + 1) % phrases.length);
         setPhase("typing");
         return;
       }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
 import InvisibleWord from "@/components/InvisibleWord";
+import ScrollCue from "@/components/ScrollCue";
 import PresentSection from "@/components/PresentSection";
 import FuturesSection from "@/components/FuturesSection";
 
@@ -17,18 +18,7 @@ export default function Home() {
           </span>
         </h1>
 
-        <p className="hero-sub">
-          Writing on <strong>decision making under deep uncertainty</strong>,
-          non-ergodic systems, and bimodal strategies — for people making bets
-          whose outcomes don&apos;t average out.
-        </p>
-
-        <div className="hero-actions">
-          <Link href="/writing" className="btn btn-primary">
-            Read the essays
-            <span className="arrow">→</span>
-          </Link>
-        </div>
+        <ScrollCue />
       </section>
 
       <PresentSection />

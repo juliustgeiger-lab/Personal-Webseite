@@ -220,13 +220,48 @@ main.home {
 .hero-headline {
   font-family: var(--font-geist-sans), "Geist", sans-serif;
   font-weight: 500;
-  font-size: clamp(44px, 7.2vw, 108px);
+  font-size: clamp(52px, 8.4vw, 128px);
   line-height: 1.02;
   letter-spacing: -0.035em;
   color: var(--ink);
   max-width: 16ch;
   text-align: center;
   margin: 0 auto;
+}
+
+/* Pulsating scroll cue at the bottom of the hero — both visual loop and
+   click-to-advance one viewport. */
+.scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 56px;
+  transform: translateX(-50%);
+  background: transparent;
+  border: 0;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 200ms ease;
+}
+
+.scroll-cue:hover {
+  color: var(--ink);
+}
+
+.scroll-cue__arrow {
+  width: 34px;
+  height: 34px;
+  display: block;
+  animation: scroll-cue-pulse 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes scroll-cue-pulse {
+  0%   { transform: translateY(0); opacity: 0.35; }
+  50%  { transform: translateY(8px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 0.35; }
 }
 
 .hero-headline .line { display: block; }

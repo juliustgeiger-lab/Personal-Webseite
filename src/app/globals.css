@@ -606,7 +606,7 @@ section.present {
    without Sacramento's cursive flourish. */
 .present-headline__lead {
   display: block;
-  font-family: var(--font-caveat), cursive;
+  font-family: var(--font-architects), cursive;
   font-weight: 600;
   font-style: normal;
   letter-spacing: 0;
@@ -757,7 +757,7 @@ section.many-worlds {
 
 .many-worlds-headline__lead {
   display: block;
-  font-family: var(--font-caveat), cursive;
+  font-family: var(--font-architects), cursive;
   font-weight: 600;
   font-style: normal;
   letter-spacing: 0;

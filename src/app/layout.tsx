@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, JetBrains_Mono, Sacramento, Caveat } from "next/font/google";
+import { Geist, JetBrains_Mono, Sacramento, Architects_Daughter } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
@@ -19,10 +19,10 @@ const sacramento = Sacramento({
   weight: "400",
 });
 
-const caveat = Caveat({
-  variable: "--font-caveat",
+const architectsDaughter = Architects_Daughter({
+  variable: "--font-architects",
   subsets: ["latin"],
-  weight: ["500", "600"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${jetbrainsMono.variable} ${sacramento.variable} ${caveat.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${jetbrainsMono.variable} ${sacramento.variable} ${architectsDaughter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <nav className="top">

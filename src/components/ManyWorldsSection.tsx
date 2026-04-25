@@ -20,9 +20,9 @@ export default function ManyWorldsSection() {
         <TypewriterText phrases={ENDINGS} />
       </h2>
 
-      <a href="#essays" className="btn btn-primary many-worlds-cta">
+      <a href="#essays" className="btn btn-ghost many-worlds-cta">
         Essays
-        <span className="arrow">→</span>
+        <span className="arrow">↓</span>
       </a>
     </section>
   );

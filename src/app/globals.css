@@ -768,11 +768,20 @@ section.many-worlds {
 }
 
 /* CTA at the bottom of the many-worlds section — slightly bigger than the
-   default .btn so it carries weight under the large headline. */
+   default .btn so it carries weight under the large headline, and pushed
+   well below the typewriter line so it reads as a separate beat. */
 .many-worlds-cta {
   font-size: 16px;
   padding: 13px 22px;
-  margin-top: 8px;
+  margin-top: 64px;
+}
+
+.many-worlds-cta .arrow {
+  transition: transform 200ms ease;
+}
+
+.many-worlds-cta:hover .arrow {
+  transform: translateY(3px);
 }
 
 /* Typewriter ending on the second line of the many-worlds headline */

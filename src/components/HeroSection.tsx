@@ -4,12 +4,37 @@ import { useEffect, useRef, useState } from "react";
 import InvisibleWord, { type InvisibleWordState } from "./InvisibleWord";
 import ScrollCue from "./ScrollCue";
 
+const UNLOCK_KEY = "hero-unlocked";
+
 // The hero locks page scroll until the user has hovered both `invisible`
-// and `uncertain`. The scroll cue only appears once unlocked. `unwritten`
-// is not gated — the user can keep cycling through it after unlock.
+// and `uncertain`. The scroll cue only appears once unlocked. The unlock
+// is persisted to localStorage so returning users aren't gated again.
 export default function HeroSection() {
   const seenRef = useRef({ invisible: false, uncertain: false });
   const [unlocked, setUnlocked] = useState(false);
+
+  // On mount: kill the browser's scroll-restoration (otherwise a reload can
+  // drop us in the middle of Beat 2 with the lock still active = stuck), then
+  // force scroll to the top, then check whether the user has unlocked before.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+    } catch {}
+    try {
+      const persisted = window.localStorage.getItem(UNLOCK_KEY) === "1";
+      if (persisted) {
+        setUnlocked(true);
+      } else {
+        window.scrollTo(0, 0);
+      }
+    } catch {
+      // localStorage may throw in private mode — fall back to gated state.
+      window.scrollTo(0, 0);
+    }
+  }, []);
 
   const handleProgress = (state: InvisibleWordState) => {
     if (state === "invisible" || state === "uncertain") {
@@ -20,6 +45,9 @@ export default function HeroSection() {
         !unlocked
       ) {
         setUnlocked(true);
+        try {
+          window.localStorage.setItem(UNLOCK_KEY, "1");
+        } catch {}
       }
     }
   };

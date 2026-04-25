@@ -19,14 +19,16 @@ const QUESTIONS = [
   "Stay in the relationship, or leave?",
   "Sell now, or hold through the dip?",
   "Take the job, or turn it down?",
+  "Quit the corporate job and chase the dream, or stay the course?",
   "Have the hard conversation tonight, or let it slide?",
   "Move in together, or keep your own place?",
-  "Quit and start the company, or stay one more year?",
+  "Move abroad, or stay where your roots are?",
   "Have a kid now, or wait?",
   "Take the buyout, or keep building?",
-  "Marry her, or wait?",
+  "Propose, or wait another year?",
   "Cut your losses, or double down?",
-  "Tell her the truth, or protect her from it?",
+  "Tell them the truth, or protect them from it?",
+  "Trade the salary for the calling, or keep both feet in?",
 ];
 
 const QUESTION_DISPLAY_MS = 4800;

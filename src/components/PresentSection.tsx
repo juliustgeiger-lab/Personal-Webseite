@@ -6,10 +6,10 @@ const VIEW_W = 760;
 // viewBox aspect must match the rendered CSS aspect (760×280) — otherwise
 // preserveAspectRatio="none" stretches the aura circles into ovals.
 const VIEW_H = 280;
-// NOW sits slightly left of center: past on the left compresses, future on
-// the right opens up empty — the decision is here, the outcome isn't shown.
-const NOW_X = 280;
-const NOW_Y = 140;
+// NOW dead-centre on the canvas. Past arrives from the left, future side is
+// equally empty on the right — the moment is the focal point.
+const NOW_X = VIEW_W / 2;
+const NOW_Y = VIEW_H / 2;
 
 const QUESTIONS = [
   "Propose or break up?",

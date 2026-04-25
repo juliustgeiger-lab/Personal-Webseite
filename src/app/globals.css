@@ -764,7 +764,27 @@ section.many-worlds {
   letter-spacing: -0.03em;
   color: var(--ink);
   text-align: center;
-  max-width: 24ch;
+  max-width: 32ch;
+}
+
+/* Typewriter ending on the second line of the many-worlds headline */
+.typewriter {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.typewriter__caret {
+  display: inline-block;
+  width: 2px;
+  height: 0.92em;
+  background: var(--ink);
+  margin-left: 4px;
+  vertical-align: -0.05em;
+  animation: typewriter-blink 1s step-end infinite;
+}
+
+@keyframes typewriter-blink {
+  50% { opacity: 0; }
 }
 
 /* (.many-worlds-headline__lead is styled with .present-headline__lead above) */

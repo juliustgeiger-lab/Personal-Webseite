@@ -1,6 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
+import TypewriterText from "./TypewriterText";
+
+const ENDINGS = [
+  "the face of uncertainty",
+  "many parallel universes",
+  "worlds we didn't predict",
+  "systems we don't control",
+  "the tails of distributions",
+  "turbulent waters",
+];
 
 const VIEW_W = 760;
 const VIEW_H = 300;
@@ -51,7 +61,9 @@ export default function ManyWorldsSection() {
     <section className="many-worlds">
       <h2 className="many-worlds-headline">
         <span className="many-worlds-headline__lead">Yet…</span>
-        Some decisions <em className="emph">perform</em> in many worlds.
+        Some decisions <em className="emph">perform</em> in
+        <br />
+        <TypewriterText phrases={ENDINGS} />
       </h2>
 
       <svg

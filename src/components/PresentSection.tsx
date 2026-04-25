@@ -11,22 +11,22 @@ const START_Y = 160;
 const END_X = 720;
 const SPREAD = 220;
 
-// Questions cycle through chat-bubble style above the NOW dot. Esther-Perel-
-// flavoured: relational, value-laden, slightly probing. No typewriter — each
-// fades out, swaps, fades back in.
+// Concrete decisions someone is actually facing — not abstract introspection.
+// Mostly binary: do this or don't, take the leap or hold. Mix of investing,
+// business, relationship, family, life. Cycle in chat-bubble style.
 const QUESTIONS = [
-  "What would you still own if the market closed for ten years?",
-  "Are you committed to your partner — or to the story of being committed?",
-  "Whose approval are you still working for?",
-  "What part of yourself do you hide from the people you love?",
-  "Is this the work you'd do if no one were watching?",
-  "What did your parents teach you about love that you're still unlearning?",
-  "When was the last time you felt truly seen?",
-  "What are you postponing because it would change you?",
-  "What lie do you tell yourself most often?",
-  "Where do you feel most yourself?",
-  "Is the next dollar worth what it will cost you to earn it?",
-  "Whose voice plays in your head when you make a hard decision?",
+  "Buy the company, or pass?",
+  "Stay in the relationship, or leave?",
+  "Sell now, or hold through the dip?",
+  "Take the job, or turn it down?",
+  "Have the hard conversation tonight, or let it slide?",
+  "Move in together, or keep your own place?",
+  "Quit and start the company, or stay one more year?",
+  "Have a kid now, or wait?",
+  "Take the buyout, or keep building?",
+  "Marry her, or wait?",
+  "Cut your losses, or double down?",
+  "Tell her the truth, or protect her from it?",
 ];
 
 const QUESTION_DISPLAY_MS = 4800;

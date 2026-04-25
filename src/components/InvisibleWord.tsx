@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import UncertainGlitch from "./UncertainGlitch";
+import UnwrittenStroke from "./UnwrittenStroke";
 
 type WordState = "invisible" | "uncertain" | "unwritten";
 
@@ -90,17 +91,7 @@ export default function InvisibleWord() {
       ) : word === "unwritten" ? (
         <>
           <span className="ghost">{word}</span>
-          <span className="outline" aria-hidden="true">
-            {Array.from(word).map((ch, i) => (
-              <span
-                key={i}
-                className="uw-letter"
-                style={{ animationDelay: `${i * 115}ms` }}
-              >
-                {ch}
-              </span>
-            ))}
-          </span>
+          <UnwrittenStroke />
         </>
       ) : (
         <>

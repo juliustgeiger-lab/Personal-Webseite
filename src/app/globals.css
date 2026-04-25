@@ -353,67 +353,84 @@ main.home {
 }
 
 /* ===== Handwrite mode (for "unwritten") =====
-   Cursive script in fountain-pen ink; the cursor becomes a black fountain pen
-   that "writes" the word left-to-right via clip-path; the ink then dries
-   slowly into invisibility (long opacity ramp + light desaturation + faint
-   blur to simulate fading ink). */
+   Cursive script rendered as an SVG <text> overlaying the ghost. Stroke is
+   drawn by animating stroke-dashoffset (variable speed across the word, so
+   loops/zigzags take longer than simple downstrokes), then fill fades in,
+   then the whole word dries away. Single text element keeps cursive
+   ligatures intact and matches the ghost's layout exactly. */
 
 .invisible-word--handwrite {
   font-family: var(--font-sacramento), cursive;
   cursor: url("/pen.svg") 2 42, crosshair;
-  /* Sacramento sits low on the line; nudge slightly to align with the rest of
-     the headline visually. */
-  line-height: 0.9;
 }
 
 .invisible-word--handwrite .ghost {
   font-family: var(--font-sacramento), cursive;
 }
 
-.invisible-word--handwrite .outline {
-  color: #050505;
-  -webkit-text-stroke: 0;
-  text-shadow: none;
-  -webkit-mask-image: none;
-  mask-image: none;
-  filter: none;
+/* SVG container — overlays the ghost completely so the rendered cursive
+   matches the ghost's box-size and the rest of the headline stays in place. */
+.invisible-word--handwrite .uw-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.invisible-word--handwrite .uw-text {
   font-family: var(--font-sacramento), cursive;
-  opacity: 0;
-  transition: opacity 200ms ease;
+  font-weight: 400;
+  fill: #050505;
+  fill-opacity: 0;
+  stroke: #050505;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 7500;
+  stroke-dashoffset: 7500;
 }
 
-.invisible-word--handwrite:hover .outline,
-.invisible-word--handwrite.force-reveal .outline {
-  /* Drying happens on the whole word once the writing has finished
-     (~9 letters × 115ms + last letter's 220ms reveal ≈ 1255ms). */
-  animation: uw-dry 2400ms cubic-bezier(0.32, 0.72, 0.4, 1) 1400ms forwards;
-  opacity: 1;
+.invisible-word--handwrite:hover .uw-text,
+.invisible-word--handwrite.force-reveal .uw-text {
+  animation: uw-handwrite 4000ms cubic-bezier(0.4, 0.1, 0.6, 0.95) forwards;
 }
 
-/* Each letter starts hidden (clipped from the bottom) and grows in top-to-
-   bottom — like a pen putting it down — with its own animationDelay (set
-   inline per letter so the word can be any length). */
-.uw-letter {
-  display: inline-block;
-  vertical-align: baseline;
-  clip-path: inset(0 0 100% 0);
-}
+/* Variable-speed stroke draw, then fill, then dry. The stroke-dashoffset
+   keyframes map to the rough sections of the cursive word — quicker through
+   simple strokes (u, n), slower through the zigzag of w and the looped e.
+   Path length is approximate; values tuned by eye. */
+@keyframes uw-handwrite {
+  0%   { stroke-dashoffset: 7500; fill-opacity: 0; stroke-opacity: 1; }
 
-.invisible-word--handwrite:hover .uw-letter,
-.invisible-word--handwrite.force-reveal .uw-letter {
-  animation: uw-letter-write 240ms cubic-bezier(0.42, 0.06, 0.58, 0.96) forwards;
-}
+  /* 'u' — opening downward curve, fast */
+  6%   { stroke-dashoffset: 6700; }
+  /* 'n' — moderate */
+  13%  { stroke-dashoffset: 6000; }
+  /* 'w' — multi-stroke zigzag, slower */
+  22%  { stroke-dashoffset: 5100; }
+  29%  { stroke-dashoffset: 4400; }
+  /* 'r' — small bump */
+  34%  { stroke-dashoffset: 3900; }
+  /* 'i' — single stroke + dot, quick */
+  37%  { stroke-dashoffset: 3600; }
+  /* first 't' — downstroke + crossbar */
+  43%  { stroke-dashoffset: 3050; }
+  /* second 't' — slightly faster (muscle-memory repeat) */
+  48%  { stroke-dashoffset: 2550; }
+  /* 'e' — small interior loop, slower */
+  54%  { stroke-dashoffset: 2000; }
+  /* final 'n' + trailing flourish */
+  60%  { stroke-dashoffset: 0; fill-opacity: 0; stroke-opacity: 1; }
 
-@keyframes uw-letter-write {
-  0%   { clip-path: inset(0 0 100% 0); }
-  100% { clip-path: inset(0 0 0% 0); }
-}
+  /* Ink settles into the strokes — outline gives way to filled glyphs */
+  70%  { stroke-dashoffset: 0; fill-opacity: 1; stroke-opacity: 0; }
 
-@keyframes uw-dry {
-  0%   { opacity: 1; color: #050505; filter: blur(0); }
-  45%  { opacity: 0.6; color: #2a2a2a; filter: blur(0.25px); }
-  80%  { opacity: 0.18; color: #5a5a5a; filter: blur(0.5px); }
-  100% { opacity: 0; color: #8c8c8c; filter: blur(0.7px); }
+  /* Drying — pigment fades unevenly */
+  82%  { fill-opacity: 0.55; }
+  92%  { fill-opacity: 0.18; }
+  100% { fill-opacity: 0; }
 }
 .invisible-word .scaffold .bracket {
   position: absolute;

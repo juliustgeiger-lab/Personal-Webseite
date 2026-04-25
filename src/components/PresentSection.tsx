@@ -55,7 +55,7 @@ export default function PresentSection() {
   return (
     <section className="present">
       <h2 className="present-headline">
-        <span className="present-headline__lead">Yet…</span>
+        <span className="present-headline__lead">But…</span>
         The present <em className="emph">demands</em> decisions.
       </h2>
 

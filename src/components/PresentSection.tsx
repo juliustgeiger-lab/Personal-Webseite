@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 const N_PATHS = 7;
-const ROTATE_MS = 2000;
 const VIEW_W = 760;
 const VIEW_H = 320;
 const START_X = 220;
@@ -40,25 +39,10 @@ function forkPath(sx: number, sy: number, ex: number, ey: number): string {
 }
 
 export default function PresentSection() {
-  const [active, setActive] = useState<number>(Math.floor(N_PATHS / 2));
   const [questionIndex, setQuestionIndex] = useState(0);
   const [questionVisible, setQuestionVisible] = useState(true);
 
-  // Branch rotation
-  useEffect(() => {
-    const id = setInterval(() => {
-      setActive((curr) => {
-        let next = curr;
-        while (next === curr) {
-          next = Math.floor(Math.random() * N_PATHS);
-        }
-        return next;
-      });
-    }, ROTATE_MS);
-    return () => clearInterval(id);
-  }, []);
-
-  // Question rotation: fade out, swap, fade back in
+  // Question rotation: fade out, swap, fade back in.
   useEffect(() => {
     let fadeTimer: ReturnType<typeof setTimeout> | null = null;
     const interval = setInterval(() => {
@@ -80,9 +64,12 @@ export default function PresentSection() {
     return { d: forkPath(START_X, START_Y, END_X, endY), endY };
   });
 
-  // Position the bubble's anchor over the NOW dot. Because the SVG uses
-  // preserveAspectRatio="none", the dot's pixel position scales linearly with
-  // the SVG's CSS dimensions — so we can express it as a percentage.
+  // Each question (= a decision) maps deterministically to one branch.
+  // ×3 mod 7 walks all paths in pseudo-random order, so consecutive questions
+  // never light up the same path twice in a row.
+  const decidedPath = (questionIndex * 3) % N_PATHS;
+  const decidedEndY = branches[decidedPath].endY;
+
   const dotLeftPct = (START_X / VIEW_W) * 100;
   const dotTopPct = (START_Y / VIEW_H) * 100;
 
@@ -109,20 +96,43 @@ export default function PresentSection() {
             className="present-line"
           />
 
-          {/* Future branches */}
+          {/* Static fan of possible futures (faint) */}
           {branches.map((b, i) => (
-            <g
-              key={i}
-              className={"present-branch" + (i === active ? " present-branch--on" : "")}
-            >
+            <g key={i}>
               <path d={b.d} className="present-path" />
               <circle cx={END_X} cy={b.endY} r={3} className="present-end" />
             </g>
           ))}
 
-          {/* NOW — pulsing dot */}
+          {/* The decided path — drawn fresh each time the question changes.
+              Different question → different path → different future endpoint. */}
+          <g key={`decided-${questionIndex}`}>
+            <path d={branches[decidedPath].d} className="present-decided-path" />
+            <circle
+              cx={END_X}
+              cy={decidedEndY}
+              r={4.5}
+              className="present-decided-end"
+            />
+          </g>
+
+          {/* NOW — dot + two ripples synced to question changes (key change
+              forces fresh animation on each new decision). */}
           <g transform={`translate(${START_X} ${START_Y})`}>
-            <circle cx={0} cy={0} r={20} className="present-pulse" />
+            <circle
+              key={`pulse-a-${questionIndex}`}
+              cx={0}
+              cy={0}
+              r={20}
+              className="present-pulse"
+            />
+            <circle
+              key={`pulse-b-${questionIndex}`}
+              cx={0}
+              cy={0}
+              r={20}
+              className="present-pulse present-pulse--delayed"
+            />
             <circle cx={0} cy={0} r={5.5} className="present-dot" />
           </g>
         </svg>

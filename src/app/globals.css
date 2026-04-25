@@ -665,47 +665,69 @@ section.present {
   fill: none;
   stroke: #d8d5cc;
   stroke-width: 1;
-  transition:
-    stroke 500ms cubic-bezier(0.22, 1, 0.36, 1),
-    stroke-width 500ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .present-end {
   fill: #d8d5cc;
-  transition: fill 500ms ease;
 }
 
-.present-branch--on .present-path {
-  stroke: #0a0a0a;
+/* The decided path — fresh on every question. The single ink stroke draws
+   itself from NOW out to its endpoint, holds, then fades. The endpoint dot
+   pops just as the stroke arrives, marking "this future was selected". */
+.present-decided-path {
+  fill: none;
+  stroke: var(--ink);
   stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-dasharray: 720;
+  stroke-dashoffset: 720;
+  animation: present-decided-draw 1700ms cubic-bezier(0.42, 0, 0.58, 1) forwards;
 }
 
-.present-branch--on .present-end {
-  fill: #0a0a0a;
+@keyframes present-decided-draw {
+  0%   { stroke-dashoffset: 720; opacity: 1; }
+  55%  { stroke-dashoffset: 0;   opacity: 1; }
+  82%  { stroke-dashoffset: 0;   opacity: 0.55; }
+  100% { stroke-dashoffset: 0;   opacity: 0; }
+}
+
+.present-decided-end {
+  fill: var(--ink);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: present-decided-pop 1300ms cubic-bezier(0.34, 1.56, 0.64, 1) 880ms forwards;
+}
+
+@keyframes present-decided-pop {
+  0%   { opacity: 0; transform: scale(0.4); }
+  35%  { opacity: 1; transform: scale(1.4); }
+  100% { opacity: 0; transform: scale(1); }
 }
 
 .present-dot {
   fill: #0a0a0a;
 }
 
+/* Ripples emanate from NOW once per question (key-driven re-mount), with a
+   second slightly delayed wave for richness. */
 .present-pulse {
   fill: none;
   stroke: #0a0a0a;
   stroke-width: 1;
   transform-origin: center;
   transform-box: fill-box;
-  animation: present-pulse 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  opacity: 0;
+  animation: present-pulse 1900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.present-pulse--delayed {
+  animation-delay: 320ms;
 }
 
 @keyframes present-pulse {
-  0% {
-    transform: scale(0.35);
-    opacity: 0.7;
-  }
-  100% {
-    transform: scale(2.6);
-    opacity: 0;
-  }
+  0%   { transform: scale(0.3);  opacity: 0.7; }
+  100% { transform: scale(2.8);  opacity: 0; }
 }
 
 /* ===== FUTURES (rotating word + Monte Carlo) ===== */

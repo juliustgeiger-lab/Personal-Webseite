@@ -638,21 +638,24 @@ section.present {
    shifted up via transform so its tail almost touches the dot. */
 .present-bubble {
   position: absolute;
-  width: clamp(240px, 34vw, 340px);
+  width: clamp(320px, 44vw, 460px);
   background: var(--bg);
   border: 1px solid var(--rule);
-  border-radius: 18px;
-  padding: 14px 18px;
-  box-shadow: 0 8px 24px rgba(10, 10, 10, 0.06);
-  transform: translate(-50%, calc(-100% - 26px));
+  border-radius: 22px;
+  padding: 20px 26px;
+  box-shadow: 0 12px 32px rgba(10, 10, 10, 0.07);
+  transform: translate(-50%, calc(-100% - 28px));
   z-index: 5;
   pointer-events: none;
 }
 
+/* Tail sits at the horizontal centre of the bubble — and the bubble itself
+   is centred over the NOW dot via translateX(-50%) — so the arrow points
+   straight down at the dot. */
 .present-bubble::before {
   content: "";
   position: absolute;
-  left: 30%;
+  left: 50%;
   bottom: -7px;
   width: 12px;
   height: 12px;
@@ -665,8 +668,8 @@ section.present {
 
 .present-bubble__text {
   margin: 0;
-  font-size: 15px;
-  line-height: 1.45;
+  font-size: 17px;
+  line-height: 1.5;
   color: var(--ink);
 }
 

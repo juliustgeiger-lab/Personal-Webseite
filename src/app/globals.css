@@ -606,19 +606,19 @@ section.present {
   max-width: 24ch;
 }
 
-/* Bridge from the previous block — sits modestly above the headline.
-   Tiny, grey, same Geist family, no negative letter-spacing crowding. */
+/* Bridge from the previous block — set in Instrument Serif italic so it
+   reads as a literary aside above the sans-serif headline. */
 .present-headline__lead,
 .many-worlds-headline__lead {
   display: block;
-  font-family: inherit;
+  font-family: var(--font-instrument), Georgia, serif;
   font-weight: 400;
-  font-style: inherit;
+  font-style: italic;
   letter-spacing: 0;
   color: var(--ink-soft);
-  font-size: 0.22em;
+  font-size: 0.28em;
   line-height: 1;
-  margin-bottom: 1.4em;
+  margin-bottom: 1.3em;
 }
 
 .present-canvas {

@@ -289,100 +289,67 @@ main.home {
   opacity: 1;
 }
 
-/* ===== Glitch mode (post-first-hover) ===== */
-.outline-glitch {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  display: none;
-  font: inherit;
-  color: var(--ink);
-}
+/* ===== Glitch mode — JS-driven, no continuous CSS animation =====
+   Layers are rendered by <UncertainGlitch>; CSS only gates visibility on hover.
+   All position/letter changes happen via inline style updates per frame. */
 
-.invisible-word--glitch .outline-glitch {
+.ucg__ghost {
   display: inline-block;
-  opacity: 0;
-  transition: opacity 120ms ease;
+  color: transparent;
 }
 
-.outline-glitch--r {
-  color: rgba(239, 68, 68, 0.85);
+.ucg__channel,
+.ucg__main,
+.ucg__slice {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  font: inherit;
 }
 
-.outline-glitch--c {
-  color: rgba(99, 102, 241, 0.85);
-}
-
-/* In glitch mode the main outline drops the fog-mask and becomes a solid shake */
-.invisible-word--glitch .outline {
+.ucg__main {
   color: var(--ink);
-  -webkit-text-stroke: 0;
-  text-shadow: none;
-  -webkit-mask-image: none;
-  mask-image: none;
-  filter: none;
-  transition: opacity 120ms ease;
 }
 
-.invisible-word--glitch:hover .outline,
-.invisible-word--glitch.force-reveal .outline {
-  opacity: 1;
-  animation:
-    iw-glitch-shake 1100ms steps(7) infinite,
-    iw-flicker 2.3s linear infinite;
+/* Muted, dark color tones — never bright/saturated */
+.ucg__channel--r {
+  color: rgba(140, 50, 50, 0.85);
 }
 
-.invisible-word--glitch:hover .outline-glitch--r,
-.invisible-word--glitch.force-reveal .outline-glitch--r {
-  opacity: 1;
-  animation:
-    iw-glitch-r 1300ms steps(9) infinite,
-    iw-flicker 2.1s linear infinite 150ms;
+.ucg__channel--b {
+  color: rgba(50, 70, 140, 0.85);
 }
 
-.invisible-word--glitch:hover .outline-glitch--c,
-.invisible-word--glitch.force-reveal .outline-glitch--c {
-  opacity: 1;
-  animation:
-    iw-glitch-c 1450ms steps(11) infinite,
-    iw-flicker 2.7s linear infinite 300ms;
+.ucg__slice {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
 }
 
-@keyframes iw-glitch-shake {
-  0%, 100% { transform: translate(0, 0); clip-path: inset(0); }
-  15% { transform: translate(2px, -1px); clip-path: inset(28% 0 55% 0); }
-  30% { transform: translate(-3px, 2px); clip-path: inset(62% 0 14% 0); }
-  45% { transform: translate(1px, 3px); clip-path: inset(0); }
-  60% { transform: translate(-2px, -2px); clip-path: inset(18% 0 70% 0); }
-  75% { transform: translate(3px, 1px); clip-path: inset(48% 0 28% 0); }
-  90% { transform: translate(-1px, -3px); clip-path: inset(0); }
+.ucg__slice-inner {
+  display: block;
+  color: var(--ink);
+  white-space: nowrap;
 }
 
-@keyframes iw-glitch-r {
-  0%, 100% { transform: translate(0, 0); clip-path: inset(0); }
-  20% { transform: translate(-9px, 3px); clip-path: inset(22% 0 58% 0); }
-  40% { transform: translate(7px, -4px); clip-path: inset(54% 0 22% 0); }
-  60% { transform: translate(-6px, 2px); clip-path: inset(10% 0 70% 0); }
-  80% { transform: translate(8px, -1px); clip-path: inset(66% 0 14% 0); }
+/* Hide all glitch layers when the word isn't being hovered — schedulers
+   keep running, but the user only sees stillness/glitches while looking. */
+.invisible-word--glitch .ucg__channel,
+.invisible-word--glitch .ucg__main,
+.invisible-word--glitch .ucg__slice {
+  visibility: hidden;
 }
 
-@keyframes iw-glitch-c {
-  0%, 100% { transform: translate(0, 0); clip-path: inset(0); }
-  25% { transform: translate(10px, 1px); clip-path: inset(46% 0 24% 0); }
-  50% { transform: translate(-8px, 3px); clip-path: inset(12% 0 68% 0); }
-  75% { transform: translate(6px, -3px); clip-path: inset(60% 0 18% 0); }
-}
-
-/* Uneven opacity flicker — creates an unstable, unreliable feeling */
-@keyframes iw-flicker {
-  0%, 4%, 12%, 22%, 38%, 52%, 68%, 82%, 94%, 100% { opacity: 1; }
-  6% { opacity: 0.25; }
-  14% { opacity: 0.6; }
-  28% { opacity: 0.15; }
-  42% { opacity: 0.7; }
-  58% { opacity: 0.3; }
-  72% { opacity: 0.5; }
-  86% { opacity: 0.2; }
+.invisible-word--glitch:hover .ucg__channel,
+.invisible-word--glitch:hover .ucg__main,
+.invisible-word--glitch:hover .ucg__slice,
+.invisible-word--glitch.force-reveal .ucg__channel,
+.invisible-word--glitch.force-reveal .ucg__main,
+.invisible-word--glitch.force-reveal .ucg__slice {
+  visibility: visible;
 }
 
 /* ===== Handwrite mode (for "unwritten") ===== */

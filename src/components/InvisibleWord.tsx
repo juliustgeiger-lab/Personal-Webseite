@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import UncertainGlitch from "./UncertainGlitch";
 
 type WordState = "invisible" | "uncertain" | "unwritten";
 
@@ -84,16 +85,16 @@ export default function InvisibleWord() {
       className={"invisible-word" + modeClass + (forced ? " force-reveal" : "")}
       onClick={() => setForced((v) => !v)}
     >
-      <span className="ghost">{word}</span>
-      <span className="outline-glitch outline-glitch--r" aria-hidden="true">
-        {word}
-      </span>
-      <span className="outline-glitch outline-glitch--c" aria-hidden="true">
-        {word}
-      </span>
-      <span className="outline" aria-hidden="true">
-        {word}
-      </span>
+      {word === "uncertain" ? (
+        <UncertainGlitch text={word} />
+      ) : (
+        <>
+          <span className="ghost">{word}</span>
+          <span className="outline" aria-hidden="true">
+            {word}
+          </span>
+        </>
+      )}
       <span className="scaffold">
         <span className="bracket tl" />
         <span className="bracket tr" />

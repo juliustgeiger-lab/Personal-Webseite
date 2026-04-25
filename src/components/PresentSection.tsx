@@ -12,20 +12,24 @@ const NOW_X = 280;
 const NOW_Y = 140;
 
 const QUESTIONS = [
-  "Buy the company, or pass?",
-  "Stay in the relationship, or leave?",
-  "Sell now, or hold through the dip?",
-  "Take the job, or turn it down?",
-  "Quit the corporate job and chase the dream, or stay the course?",
-  "Have the hard conversation tonight, or let it slide?",
-  "Move in together, or keep your own place?",
-  "Move abroad, or stay where your roots are?",
-  "Have a kid now, or wait?",
-  "Take the buyout, or keep building?",
-  "Propose, or wait another year?",
-  "Cut your losses, or double down?",
-  "Tell them the truth, or protect them from it?",
-  "Trade the salary for the calling, or keep both feet in?",
+  "Propose or break up?",
+  "Have the hard conversation tonight or let it slide?",
+  "Stay in the relationship or leave?",
+  "Fight for it or admit it's over?",
+  "Say what you really feel or keep the peace?",
+  "Tell them about it or take it to the grave?",
+  "Marry the safe one or wait for the one who really excites you?",
+  "Take the buyout or keep building?",
+  "Stay in the corporate job or chase the dream?",
+  "Buy the company or watch someone else buy it?",
+  "Pivot or persist?",
+  "Stay loyal or take the better offer?",
+  "Cut your losses or double down?",
+  "Sell now or hold through the dip?",
+  "Bail them out again or let them fall?",
+  "Pull the plug or hold on a little longer?",
+  "Get tested or keep not knowing?",
+  "Have a kid now or pursue the career?",
 ];
 
 const QUESTION_DISPLAY_MS = 4800;
@@ -41,7 +45,16 @@ export default function PresentSection() {
     const interval = setInterval(() => {
       setQuestionVisible(false);
       fadeTimer = setTimeout(() => {
-        setQuestionIndex((i) => (i + 1) % QUESTIONS.length);
+        setQuestionIndex((i) => {
+          // Pick a random next question different from the current one.
+          let next = i;
+          if (QUESTIONS.length > 1) {
+            while (next === i) {
+              next = Math.floor(Math.random() * QUESTIONS.length);
+            }
+          }
+          return next;
+        });
         setQuestionVisible(true);
       }, QUESTION_FADE_MS);
     }, QUESTION_DISPLAY_MS + QUESTION_FADE_MS);

@@ -54,20 +54,20 @@ function pickLookalike(ch: string): string | null {
 }
 
 function makeBurstFrame(text: string): Frame {
-  // 1–4 horizontal slice tears
-  const numSlices = randInt(1, 4);
+  // 2–6 horizontal slice tears (always at least 2 — burst should be obvious)
+  const numSlices = randInt(2, 6);
   const slices: Slice[] = [];
   for (let i = 0; i < numSlices; i++) {
     slices.push({
-      top: rand(0, 88),
-      height: rand(6, 28),
-      dx: Math.round(rand(-10, 10)),
+      top: rand(0, 86),
+      height: rand(6, 32),
+      dx: Math.round(rand(-16, 16)),
     });
   }
 
-  // 0–2 letter substitutions for one frame only
+  // 1–3 letter substitutions for one frame only (always at least 1)
   const overrides: Record<number, string> = {};
-  const numOverrides = Math.random() < 0.7 ? randInt(1, 2) : 0;
+  const numOverrides = randInt(1, 3);
   const used = new Set<number>();
   for (let n = 0; n < numOverrides; n++) {
     let idx = randInt(0, text.length - 1);
@@ -83,8 +83,8 @@ function makeBurstFrame(text: string): Frame {
     }
   }
 
-  // Chromatic offset: red -2..+3, blue mostly opposite
-  const redDx = randInt(-2, 3);
+  // Chromatic offset: red -3..+5, blue mostly opposite — more aggressive split
+  const redDx = randInt(-3, 5);
   const blueDx = -redDx + randInt(-1, 1);
 
   return {
@@ -124,8 +124,9 @@ export default function UncertainGlitch({ text }: { text: string }) {
 
     const runBurst = () => {
       clearInner();
-      const totalDuration = rand(80, 200);
-      const numFrames = randInt(3, 8);
+      // Longer, denser bursts — more frames, more impact per burst
+      const totalDuration = rand(140, 320);
+      const numFrames = randInt(5, 11);
       const frameDuration = totalDuration / numFrames;
       for (let i = 0; i < numFrames; i++) {
         const t = setTimeout(() => {
@@ -154,16 +155,24 @@ export default function UncertainGlitch({ text }: { text: string }) {
     };
 
     const scheduleBurst = () => {
-      // Long readable stillness — 2s to 4s
-      const delay = rand(2000, 4000);
+      // Shorter stillness, more frequent ruptures — but still long enough that
+      // each glitch lands as a hit, not as continuous noise.
+      const delay = rand(900, 2300);
+      // ~30% chance of a quick double-tap: a second burst right after the first
+      const isDoubleTap = Math.random() < 0.3;
       burstChainRef.current = setTimeout(() => {
         runBurst();
+        if (isDoubleTap) {
+          const t = setTimeout(() => runBurst(), rand(180, 360));
+          innerTimersRef.current.push(t);
+        }
         scheduleBurst();
       }, delay);
     };
 
     const scheduleFailure = () => {
-      const delay = rand(8000, 15000);
+      // Failures hit more often too
+      const delay = rand(4500, 10000);
       failureChainRef.current = setTimeout(() => {
         runFailure();
         scheduleFailure();

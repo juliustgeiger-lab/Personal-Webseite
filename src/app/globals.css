@@ -593,15 +593,18 @@ section.present {
   max-width: 24ch;
 }
 
-/* Quiet bridge from the hero — "Yet…" set small, italic, faded ink */
+/* Bridge from the hero — same size as the rest of the headline, but in
+   the Sacramento cursive so it reads as a hand-written aside before the
+   typographic statement that follows. */
 .present-headline__lead {
   display: block;
-  font-size: 0.34em;
-  font-style: italic;
+  font-family: var(--font-sacramento), cursive;
   font-weight: 400;
+  font-style: normal;
   letter-spacing: 0;
-  color: var(--ink-soft);
-  margin-bottom: 0.5em;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 0.18em;
 }
 
 .present-canvas {

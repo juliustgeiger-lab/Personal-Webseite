@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import UncertainGlitch from "./UncertainGlitch";
 import UnwrittenStroke from "./UnwrittenStroke";
 
-type WordState = "invisible" | "uncertain" | "unwritten";
+export type InvisibleWordState = "invisible" | "uncertain" | "unwritten";
 
-const FLOW: Record<WordState, WordState> = {
+const FLOW: Record<InvisibleWordState, InvisibleWordState> = {
   invisible: "uncertain",
   uncertain: "unwritten",
   unwritten: "invisible",
@@ -16,12 +16,29 @@ const FLOW: Record<WordState, WordState> = {
 // styles take over (fog reveal fades ~520ms; handwrite ends faded already).
 const SWAP_DELAY_MS = 560;
 
-export default function InvisibleWord() {
+export default function InvisibleWord({
+  onProgress,
+}: {
+  // Fires on each hover-enter with the word that is currently displayed.
+  // Lets the parent gate things (like scroll) on which words have been seen.
+  onProgress?: (word: InvisibleWordState) => void;
+} = {}) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [word, setWord] = useState<WordState>("invisible");
+  const [word, setWord] = useState<InvisibleWordState>("invisible");
   const [forced, setForced] = useState(false);
   const hasHoveredRef = useRef(false);
   const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Mirror the latest word + onProgress into refs so the listeners (attached
+  // once with empty deps) always see the current values.
+  const wordRef = useRef(word);
+  useEffect(() => {
+    wordRef.current = word;
+  }, [word]);
+  const onProgressRef = useRef(onProgress);
+  useEffect(() => {
+    onProgressRef.current = onProgress;
+  }, [onProgress]);
 
   useEffect(() => {
     const el = ref.current;
@@ -47,6 +64,7 @@ export default function InvisibleWord() {
       // Cancel a pending swap if the user came back before it fired.
       clearSwap();
       setCursor(e);
+      onProgressRef.current?.(wordRef.current);
     };
 
     const onLeave = () => {

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
-import InvisibleWord from "@/components/InvisibleWord";
-import ScrollCue from "@/components/ScrollCue";
+import HeroSection from "@/components/HeroSection";
 import PresentSection from "@/components/PresentSection";
 import ManyWorldsSection from "@/components/ManyWorldsSection";
 
@@ -10,16 +9,7 @@ export default function Home() {
 
   return (
     <main className="home">
-      <section className="hero">
-        <h1 className="hero-headline">
-          <span className="line">The future is</span>
-          <span className="line">
-            <InvisibleWord />
-          </span>
-        </h1>
-
-        <ScrollCue />
-      </section>
+      <HeroSection />
 
       <PresentSection />
 

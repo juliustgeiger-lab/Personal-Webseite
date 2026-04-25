@@ -1,6 +1,6 @@
 "use client";
 
-export default function ScrollCue() {
+export default function ScrollCue({ visible = true }: { visible?: boolean }) {
   const onClick = () => {
     if (typeof window !== "undefined") {
       window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
@@ -10,9 +10,11 @@ export default function ScrollCue() {
   return (
     <button
       type="button"
-      className="scroll-cue"
+      className={"scroll-cue" + (visible ? " scroll-cue--visible" : "")}
       onClick={onClick}
       aria-label="Scroll to the next section"
+      aria-hidden={!visible}
+      tabIndex={visible ? 0 : -1}
     >
       <svg
         viewBox="0 0 24 24"

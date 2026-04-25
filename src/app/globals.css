@@ -230,7 +230,8 @@ main.home {
 }
 
 /* Pulsating scroll cue at the bottom of the hero — both visual loop and
-   click-to-advance one viewport. */
+   click-to-advance one viewport. Hidden until the hero unlocks (after the
+   user has hovered both `invisible` and `uncertain`). */
 .scroll-cue {
   position: absolute;
   left: 50%;
@@ -244,7 +245,14 @@ main.home {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 200ms ease;
+  opacity: 0;
+  pointer-events: none;
+  transition: color 200ms ease, opacity 700ms ease;
+}
+
+.scroll-cue--visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .scroll-cue:hover {

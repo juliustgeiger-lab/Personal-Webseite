@@ -34,10 +34,15 @@ html, body {
   font-feature-settings: "ss01", "cv11";
 }
 
-/* Full-page scroll snapping */
+/* Smooth scroll everywhere; mandatory snap only on the home page (otherwise
+   subpages with no snap targets except the footer pin themselves to the
+   footer's top, leaving the user stuck at the bottom of the article). */
 html {
-  scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
+}
+
+html:has(main.home) {
+  scroll-snap-type: y mandatory;
 }
 
 body {

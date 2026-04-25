@@ -87,6 +87,21 @@ export default function InvisibleWord() {
     >
       {word === "uncertain" ? (
         <UncertainGlitch text={word} />
+      ) : word === "unwritten" ? (
+        <>
+          <span className="ghost">{word}</span>
+          <span className="outline" aria-hidden="true">
+            {Array.from(word).map((ch, i) => (
+              <span
+                key={i}
+                className="uw-letter"
+                style={{ animationDelay: `${i * 115}ms` }}
+              >
+                {ch}
+              </span>
+            ))}
+          </span>
+        </>
       ) : (
         <>
           <span className="ghost">{word}</span>

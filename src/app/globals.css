@@ -384,48 +384,36 @@ main.home {
 
 .invisible-word--handwrite:hover .outline,
 .invisible-word--handwrite.force-reveal .outline {
-  animation: iw-handwrite 3800ms cubic-bezier(0.32, 0.72, 0.4, 1) forwards;
+  /* Drying happens on the whole word once the writing has finished
+     (~9 letters × 115ms + last letter's 220ms reveal ≈ 1255ms). */
+  animation: uw-dry 2400ms cubic-bezier(0.32, 0.72, 0.4, 1) 1400ms forwards;
+  opacity: 1;
 }
 
-@keyframes iw-handwrite {
-  /* 0–35% : pen writes left-to-right (~1.3s) */
-  0% {
-    opacity: 1;
-    clip-path: inset(-25% 100% -25% 0);
-    color: #050505;
-    filter: blur(0);
-  }
-  35% {
-    opacity: 1;
-    clip-path: inset(-25% 0% -25% 0);
-    color: #050505;
-    filter: blur(0);
-  }
-  /* 35–48% : freshly written, glossy black ink, holds */
-  48% {
-    opacity: 1;
-    clip-path: inset(-25% 0% -25% 0);
-    color: #0a0a0a;
-    filter: blur(0);
-  }
-  /* 48–100% : ink slowly dries — colour drifts toward grey, opacity fades,
-     a faint blur creeps in like the pigment is bleeding into the paper */
-  70% {
-    opacity: 0.7;
-    color: #2c2c2c;
-    filter: blur(0.25px);
-  }
-  85% {
-    opacity: 0.32;
-    color: #5a5a5a;
-    filter: blur(0.45px);
-  }
-  100% {
-    opacity: 0;
-    color: #8c8c8c;
-    filter: blur(0.7px);
-    clip-path: inset(-25% 0% -25% 0);
-  }
+/* Each letter starts hidden (clipped from the bottom) and grows in top-to-
+   bottom — like a pen putting it down — with its own animationDelay (set
+   inline per letter so the word can be any length). */
+.uw-letter {
+  display: inline-block;
+  vertical-align: baseline;
+  clip-path: inset(0 0 100% 0);
+}
+
+.invisible-word--handwrite:hover .uw-letter,
+.invisible-word--handwrite.force-reveal .uw-letter {
+  animation: uw-letter-write 240ms cubic-bezier(0.42, 0.06, 0.58, 0.96) forwards;
+}
+
+@keyframes uw-letter-write {
+  0%   { clip-path: inset(0 0 100% 0); }
+  100% { clip-path: inset(0 0 0% 0); }
+}
+
+@keyframes uw-dry {
+  0%   { opacity: 1; color: #050505; filter: blur(0); }
+  45%  { opacity: 0.6; color: #2a2a2a; filter: blur(0.25px); }
+  80%  { opacity: 0.18; color: #5a5a5a; filter: blur(0.5px); }
+  100% { opacity: 0; color: #8c8c8c; filter: blur(0.7px); }
 }
 .invisible-word .scaffold .bracket {
   position: absolute;

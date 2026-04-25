@@ -656,53 +656,31 @@ section.present {
   color: var(--ink);
 }
 
-.present-line {
-  stroke: #d8d5cc;
-  stroke-width: 1;
+/* Past — a single solid line that arrives at NOW from the left.
+   The right side of the canvas is intentionally empty. */
+.present-past-line {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-linecap: round;
 }
 
-.present-path {
-  fill: none;
-  stroke: #d8d5cc;
-  stroke-width: 1;
-}
-
-.present-end {
-  fill: #d8d5cc;
-}
-
-/* The decided path — fresh on every question. The single ink stroke draws
-   itself from NOW out to its endpoint, holds, then fades. The endpoint dot
-   pops just as the stroke arrives, marking "this future was selected". */
-.present-decided-path {
+/* Aura — concentric rings around NOW that breathe asynchronously, giving
+   the moment gravitational weight without pointing to a destination. */
+.present-aura {
   fill: none;
   stroke: var(--ink);
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-dasharray: 720;
-  stroke-dashoffset: 720;
-  animation: present-decided-draw 1700ms cubic-bezier(0.42, 0, 0.58, 1) forwards;
-}
-
-@keyframes present-decided-draw {
-  0%   { stroke-dashoffset: 720; opacity: 1; }
-  55%  { stroke-dashoffset: 0;   opacity: 1; }
-  82%  { stroke-dashoffset: 0;   opacity: 0.55; }
-  100% { stroke-dashoffset: 0;   opacity: 0; }
-}
-
-.present-decided-end {
-  fill: var(--ink);
-  opacity: 0;
+  stroke-width: 1;
   transform-box: fill-box;
   transform-origin: center;
-  animation: present-decided-pop 1300ms cubic-bezier(0.34, 1.56, 0.64, 1) 880ms forwards;
 }
 
-@keyframes present-decided-pop {
-  0%   { opacity: 0; transform: scale(0.4); }
-  35%  { opacity: 1; transform: scale(1.4); }
-  100% { opacity: 0; transform: scale(1); }
+.present-aura--inner  { opacity: 0.20; animation: present-aura-breathe 4.4s ease-in-out infinite; }
+.present-aura--mid    { opacity: 0.11; animation: present-aura-breathe 6.1s ease-in-out -1.4s infinite; }
+.present-aura--outer  { opacity: 0.06; animation: present-aura-breathe 7.6s ease-in-out -2.8s infinite; }
+
+@keyframes present-aura-breathe {
+  0%, 100% { transform: scale(1);    }
+  50%      { transform: scale(1.08); }
 }
 
 .present-dot {

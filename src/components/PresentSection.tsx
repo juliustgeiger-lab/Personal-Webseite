@@ -2,17 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-const N_PATHS = 7;
 const VIEW_W = 760;
 const VIEW_H = 320;
-const START_X = 220;
-const START_Y = 160;
-const END_X = 720;
-const SPREAD = 220;
+// NOW sits slightly left of center: past on the left compresses, future on
+// the right opens up empty — the decision is here, the outcome isn't shown.
+const NOW_X = 280;
+const NOW_Y = 160;
 
-// Concrete decisions someone is actually facing — not abstract introspection.
-// Mostly binary: do this or don't, take the leap or hold. Mix of investing,
-// business, relationship, family, life. Cycle in chat-bubble style.
 const QUESTIONS = [
   "Buy the company, or pass?",
   "Stay in the relationship, or leave?",
@@ -32,11 +28,6 @@ const QUESTIONS = [
 
 const QUESTION_DISPLAY_MS = 4800;
 const QUESTION_FADE_MS = 380;
-
-function forkPath(sx: number, sy: number, ex: number, ey: number): string {
-  const mid = (ex - sx) * 0.45;
-  return `M ${sx} ${sy} C ${sx + mid} ${sy}, ${ex - mid} ${ey}, ${ex} ${ey}`;
-}
 
 export default function PresentSection() {
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -58,20 +49,8 @@ export default function PresentSection() {
     };
   }, []);
 
-  const branches = Array.from({ length: N_PATHS }, (_, i) => {
-    const frac = i / (N_PATHS - 1);
-    const endY = START_Y - SPREAD / 2 + SPREAD * frac;
-    return { d: forkPath(START_X, START_Y, END_X, endY), endY };
-  });
-
-  // Each question (= a decision) maps deterministically to one branch.
-  // ×3 mod 7 walks all paths in pseudo-random order, so consecutive questions
-  // never light up the same path twice in a row.
-  const decidedPath = (questionIndex * 3) % N_PATHS;
-  const decidedEndY = branches[decidedPath].endY;
-
-  const dotLeftPct = (START_X / VIEW_W) * 100;
-  const dotTopPct = (START_Y / VIEW_H) * 100;
+  const dotLeftPct = (NOW_X / VIEW_W) * 100;
+  const dotTopPct = (NOW_Y / VIEW_H) * 100;
 
   return (
     <section className="present">
@@ -87,38 +66,26 @@ export default function PresentSection() {
           preserveAspectRatio="none"
           aria-hidden="true"
         >
-          {/* Past — single incoming line */}
+          {/* Past — a clear, single line arriving at NOW. The future side
+              of the canvas is intentionally empty. */}
           <line
             x1={0}
-            y1={START_Y}
-            x2={START_X}
-            y2={START_Y}
-            className="present-line"
+            y1={NOW_Y}
+            x2={NOW_X - 14}
+            y2={NOW_Y}
+            className="present-past-line"
           />
 
-          {/* Static fan of possible futures (faint) */}
-          {branches.map((b, i) => (
-            <g key={i}>
-              <path d={b.d} className="present-path" />
-              <circle cx={END_X} cy={b.endY} r={3} className="present-end" />
-            </g>
-          ))}
-
-          {/* The decided path — drawn fresh each time the question changes.
-              Different question → different path → different future endpoint. */}
-          <g key={`decided-${questionIndex}`}>
-            <path d={branches[decidedPath].d} className="present-decided-path" />
-            <circle
-              cx={END_X}
-              cy={decidedEndY}
-              r={4.5}
-              className="present-decided-end"
-            />
+          {/* Aura — three concentric breathing rings centred on NOW.
+              They give the moment weight without pointing anywhere. */}
+          <g transform={`translate(${NOW_X} ${NOW_Y})`}>
+            <circle cx={0} cy={0} r={108} className="present-aura present-aura--outer" />
+            <circle cx={0} cy={0} r={68} className="present-aura present-aura--mid" />
+            <circle cx={0} cy={0} r={36} className="present-aura present-aura--inner" />
           </g>
 
-          {/* NOW — dot + two ripples synced to question changes (key change
-              forces fresh animation on each new decision). */}
-          <g transform={`translate(${START_X} ${START_Y})`}>
+          {/* NOW — pulsing ripples (synced to questions) and the solid dot */}
+          <g transform={`translate(${NOW_X} ${NOW_Y})`}>
             <circle
               key={`pulse-a-${questionIndex}`}
               cx={0}

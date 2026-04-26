@@ -34,6 +34,11 @@ const QUESTIONS = [
 const QUESTION_DISPLAY_MS = 4800;
 const QUESTION_FADE_MS = 380;
 
+// Once the section first enters the viewport, the very first question swap
+// fires fast — so the user immediately notices the questions are cycling and
+// doesn't scroll past assuming the bubble is static.
+const FIRST_CHANGE_MS = 1300;
+
 // Fisher–Yates shuffle of [0..n-1].
 function shuffledIndices(n: number): number[] {
   const arr = Array.from({ length: n }, (_, i) => i);
@@ -47,31 +52,57 @@ function shuffledIndices(n: number): number[] {
 export default function PresentSection() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [questionVisible, setQuestionVisible] = useState(true);
+  const [hasStarted, setHasStarted] = useState(false);
 
   // Shuffled deck pattern: walk through the full set in a random order, then
   // reshuffle once exhausted. No question repeats until every other has shown.
   const orderRef = useRef<number[]>([]);
   const posRef = useRef(0);
+  const sectionRef = useRef<HTMLElement>(null);
 
-  // Question rotation: fade out, advance through the shuffled deck, fade in.
+  // Initial shuffle on mount, replacing the SSR-rendered first question.
   useEffect(() => {
-    // Initial shuffle on mount, replacing the SSR-rendered first question.
     const initial = shuffledIndices(QUESTIONS.length);
     orderRef.current = initial;
     posRef.current = 0;
     setQuestionIndex(initial[0]);
+  }, []);
 
+  // Don't begin cycling until the section actually enters the viewport, so
+  // that a user scrolling here for the first time gets a fast first swap
+  // (and not a question that's already half-decayed by the time they look).
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || hasStarted) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setHasStarted(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.45 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasStarted]);
+
+  // Question rotation: first swap fires fast (FIRST_CHANGE_MS) so the user
+  // notices the questions cycle, then settles into the regular cadence.
+  useEffect(() => {
+    if (!hasStarted) return;
+
+    let pending: ReturnType<typeof setTimeout> | null = null;
     let fadeTimer: ReturnType<typeof setTimeout> | null = null;
-    const interval = setInterval(() => {
+    let isFirst = true;
+
+    const advance = () => {
       setQuestionVisible(false);
       fadeTimer = setTimeout(() => {
         let nextPos = posRef.current + 1;
         if (nextPos >= orderRef.current.length) {
-          // Deck exhausted — reshuffle, but make sure the first card of the
-          // new deck isn't the same as the one we just showed.
-          const lastShown =
-            orderRef.current[orderRef.current.length - 1];
-          let fresh = shuffledIndices(QUESTIONS.length);
+          const lastShown = orderRef.current[orderRef.current.length - 1];
+          const fresh = shuffledIndices(QUESTIONS.length);
           if (fresh.length > 1 && fresh[0] === lastShown) {
             [fresh[0], fresh[1]] = [fresh[1], fresh[0]];
           }
@@ -81,19 +112,31 @@ export default function PresentSection() {
         posRef.current = nextPos;
         setQuestionIndex(orderRef.current[nextPos]);
         setQuestionVisible(true);
+        schedule();
       }, QUESTION_FADE_MS);
-    }, QUESTION_DISPLAY_MS + QUESTION_FADE_MS);
+    };
+
+    const schedule = () => {
+      const delay = isFirst
+        ? FIRST_CHANGE_MS
+        : QUESTION_DISPLAY_MS + QUESTION_FADE_MS;
+      isFirst = false;
+      pending = setTimeout(advance, delay);
+    };
+
+    schedule();
+
     return () => {
-      clearInterval(interval);
+      if (pending) clearTimeout(pending);
       if (fadeTimer) clearTimeout(fadeTimer);
     };
-  }, []);
+  }, [hasStarted]);
 
   const dotLeftPct = (NOW_X / VIEW_W) * 100;
   const dotTopPct = (NOW_Y / VIEW_H) * 100;
 
   return (
-    <section className="present">
+    <section className="present" ref={sectionRef}>
       <h2 className="present-headline">
         <span className="present-headline__lead">But…</span>
         The present <em className="emph">demands</em> decisions.

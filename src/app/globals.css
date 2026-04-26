@@ -1264,6 +1264,21 @@ footer.site {
 .prose-content pre code { background: transparent; padding: 0; }
 .prose-content hr { margin-top: 2em; margin-bottom: 2em; border-color: var(--rule); }
 
+.prose-content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 2em auto;
+  border-radius: 4px;
+}
+
+/* In-body citation targets — when a reader clicks a [(Author, year)](#ref-…)
+   link the anchor jumps to its <a id="ref-…"></a> in the references section.
+   scroll-margin-top keeps the target clear of the fixed nav pill. */
+.prose-content a[id] {
+  scroll-margin-top: 100px;
+}
+
 @media (max-width: 900px) {
   main.home { padding: 120px 20px 60px; }
   nav.top { top: 10px; width: calc(100% - 20px); }

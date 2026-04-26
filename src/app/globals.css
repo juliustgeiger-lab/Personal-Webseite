@@ -487,12 +487,15 @@ main.home {
   100% { stroke-dashoffset: 0; }
 }
 
-/* Ink dries — fades unevenly with a faint blur, like pigment soaking in. */
+/* Ink dries — fades unevenly with a faint blur, like pigment soaking in.
+   Animates `opacity` (compositing the rendered text as a whole) rather than
+   `fill-opacity` (which composes per-glyph and makes overlapping cursive
+   letterforms render darker than the rest during the fade). */
 @keyframes uw-dry {
-  0%   { fill-opacity: 1; filter: blur(0); }
-  40%  { fill-opacity: 0.6; filter: blur(0.2px); }
-  75%  { fill-opacity: 0.2; filter: blur(0.4px); }
-  100% { fill-opacity: 0; filter: blur(0.6px); }
+  0%   { opacity: 1; filter: blur(0); }
+  40%  { opacity: 0.6; filter: blur(0.2px); }
+  75%  { opacity: 0.2; filter: blur(0.4px); }
+  100% { opacity: 0; filter: blur(0.6px); }
 }
 .invisible-word .scaffold .bracket {
   position: absolute;

@@ -412,10 +412,19 @@ main.home {
 .invisible-word--handwrite {
   font-family: var(--font-sacramento), cursive;
   cursor: url("/pen.svg") 2 42, crosshair;
+  /* Pin line-height to the parent so swapping into Sacramento doesn't push
+     "The future is" upward (Sacramento has taller natural metrics than Geist). */
+  line-height: 1;
 }
 
+/* Sacramento is narrower than Geist — pump the ghost's font-size so the
+   cursive fills the headline's visual width, then claw the line-height back
+   to ~parent so the headline above doesn't jump when this state is active. */
 .invisible-word--handwrite .ghost {
   font-family: var(--font-sacramento), cursive;
+  font-size: 1.4em;
+  line-height: 0.72;
+  vertical-align: baseline;
 }
 
 /* SVG container — overlays the ghost completely so the rendered cursive

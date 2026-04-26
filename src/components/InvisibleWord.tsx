@@ -23,8 +23,8 @@ const AUTO_PHASES: Record<
   InvisibleWordState,
   { rest: number; reveal: number }
 > = {
-  invisible: { rest: 1500, reveal: 1100 },
-  uncertain: { rest: 1200, reveal: 2000 },
+  invisible: { rest: 2000, reveal: 2400 },
+  uncertain: { rest: 1700, reveal: 3200 },
   unwritten: { rest: 700, reveal: 4000 },
 };
 

@@ -148,6 +148,12 @@ export default function PresentSection() {
           className="present-bubble"
           style={{ left: `${dotLeftPct}%`, top: `${dotTopPct}%` }}
         >
+          {/* Hidden measurement so the bubble is always sized to the longest
+              question — keeps every question on a single line, no width jumps
+              when shorter questions cycle in. */}
+          <span className="present-bubble__measure" aria-hidden="true">
+            Buy the company or watch someone else buy it?
+          </span>
           <p
             className="present-bubble__text"
             style={{

@@ -630,9 +630,10 @@ section.present {
    shifted up via transform so its tail almost touches the dot. */
 .present-bubble {
   position: absolute;
-  /* Sized to fit the longest question — "Buy the company or watch someone
-     else buy it?" — on a single line. Capped to viewport on small screens. */
-  width: 620px;
+  /* Width auto-fits the longest question (a hidden .present-bubble__measure
+     span carries it, so the bubble is exactly as wide as it needs to be).
+     Capped to viewport on small screens. */
+  width: max-content;
   max-width: calc(100vw - 48px);
   background: var(--bg);
   border: 1px solid var(--rule);
@@ -667,6 +668,23 @@ section.present {
   line-height: 1.4;
   letter-spacing: -0.01em;
   color: var(--ink);
+  /* All questions render on a single line — bubble is sized for the longest. */
+  white-space: nowrap;
+}
+
+/* Invisible width sentinel — same font metrics as __text — that locks the
+   bubble's width to fit the longest question. height:0 + overflow:hidden so
+   it occupies no vertical space; white-space:nowrap so its width contributes
+   to the bubble's max-content. */
+.present-bubble__measure {
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-size: 21px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 /* Past — a single solid line that arrives at NOW from the left.

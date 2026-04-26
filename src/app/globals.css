@@ -437,37 +437,28 @@ main.home {
   transform-origin: center;
 }
 
-/* Single EMS Allure cursive stroke. pathLength=100 normalises dash math so
-   stroke-dasharray=100 gates the whole word's reveal regardless of real path
-   length. The path's twelve M sub-strokes act as instant pen lifts (zero
-   length, no time consumed) — the dash sweeps through them in writing order. */
-.invisible-word--handwrite .uw-stroke {
-  fill: none;
-  stroke: #1e3a8a;          /* fountain-pen ink blue */
-  stroke-width: 28;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 100;
-  stroke-dashoffset: 100;
+/* Caveat fill path. Renders fountain-pen-blue, no stroke. */
+.invisible-word--handwrite .uw-fill {
+  fill: #1e3a8a;            /* fountain-pen ink blue */
+  stroke: none;
 }
 
-/* Writing animation runs only while .force-reveal (or :hover) is set, so the
-   stroke is invisible between reveals — ready to be re-drawn each cycle. */
-.invisible-word--handwrite:hover .uw-stroke,
-.invisible-word--handwrite.force-reveal .uw-stroke {
-  animation: uw-draw 3500ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+/* Wipe animation: left→right clip-path inset. The whole word is fully
+   rendered; the inset mask just slides off to reveal it column by column.
+   Not "real" pen-tracing (Caveat is a fill font, no centreline data) — a
+   single-line cursive swap for actual tracing is queued for later. */
+.invisible-word--handwrite .uw-svg {
+  clip-path: inset(0 100% 0 0);
 }
-
-/* The whole SVG fades after the writing finishes so the auto-cycle's hand-off
-   to the next word stays gentle. Auto-cycle reveal=4000ms; writing ends at
-   3500ms, leaving 500ms of fade headroom before the state swap. */
 .invisible-word--handwrite:hover .uw-svg,
 .invisible-word--handwrite.force-reveal .uw-svg {
-  animation: uw-fade 500ms linear 3500ms forwards;
+  animation: uw-wipe 3500ms cubic-bezier(0.65, 0, 0.35, 1) forwards,
+             uw-fade 500ms linear 3500ms forwards;
 }
 
-@keyframes uw-draw {
-  to { stroke-dashoffset: 0; }
+@keyframes uw-wipe {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
 }
 
 @keyframes uw-fade {
@@ -475,10 +466,8 @@ main.home {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .invisible-word--handwrite:hover .uw-stroke,
-  .invisible-word--handwrite.force-reveal .uw-stroke {
-    animation: none;
-    stroke-dashoffset: 0;
+  .invisible-word--handwrite .uw-svg {
+    clip-path: inset(0 0 0 0);
   }
   .invisible-word--handwrite:hover .uw-svg,
   .invisible-word--handwrite.force-reveal .uw-svg {

@@ -28,9 +28,6 @@ const AUTO_PHASES: Record<
   unwritten: { rest: 700, reveal: 4000 },
 };
 
-// How long after the last interaction the auto-cycle resumes.
-const RESUME_IDLE_MS = 5000;
-
 // Map progress through the invisible reveal (0..1) to a (--mx, --my) pair.
 // A ghost cursor enters from off-screen left, hovers near the middle of the
 // word, then drifts off to the right — partial reveals so the user gets
@@ -70,7 +67,6 @@ export default function InvisibleWord({
   const [autoMode, setAutoMode] = useState(true);
   const hasHoveredRef = useRef(false);
   const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Mirror the latest word + onProgress into refs so the listeners (attached
   // once with empty deps) always see the current values.
@@ -83,8 +79,9 @@ export default function InvisibleWord({
     onProgressRef.current = onProgress;
   }, [onProgress]);
 
-  // Manual hover/leave behaviour. Stops auto-cycle on enter; schedules a
-  // resume after RESUME_IDLE_MS of no interaction following a leave.
+  // Manual hover/leave behaviour. The auto-cycle pauses on enter and resumes
+  // immediately on leave (after the standard swap-delay), so the user can
+  // dip in, then the cycle picks up where it left off without any idle wait.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -93,12 +90,6 @@ export default function InvisibleWord({
       if (swapTimerRef.current) {
         clearTimeout(swapTimerRef.current);
         swapTimerRef.current = null;
-      }
-    };
-    const clearResume = () => {
-      if (resumeTimerRef.current) {
-        clearTimeout(resumeTimerRef.current);
-        resumeTimerRef.current = null;
       }
     };
 
@@ -112,31 +103,24 @@ export default function InvisibleWord({
 
     const onEnter = (e: MouseEvent) => {
       hasHoveredRef.current = true;
-      // First user interaction interrupts the auto-cycle; resume timer paused.
       setAutoMode(false);
       setForced(false);
       clearSwap();
-      clearResume();
       setCursor(e);
       onProgressRef.current?.(wordRef.current);
     };
 
     const onLeave = () => {
-      // After a real hover, advance to the next word on a delay.
       if (hasHoveredRef.current) {
         hasHoveredRef.current = false;
         clearSwap();
+        // After the previous state's fade-out, advance to the next word AND
+        // re-enable auto-cycle so the loop continues from there.
         swapTimerRef.current = setTimeout(() => {
           setWord((curr) => FLOW[curr]);
+          setAutoMode(true);
           swapTimerRef.current = null;
         }, SWAP_DELAY_MS);
-
-        // Resume the auto-cycle after some idle time with no interaction.
-        clearResume();
-        resumeTimerRef.current = setTimeout(() => {
-          setAutoMode(true);
-          resumeTimerRef.current = null;
-        }, RESUME_IDLE_MS);
       }
     };
 
@@ -145,7 +129,6 @@ export default function InvisibleWord({
     el.addEventListener("mouseleave", onLeave);
     return () => {
       clearSwap();
-      clearResume();
       el.removeEventListener("mouseenter", onEnter);
       el.removeEventListener("mousemove", setCursor);
       el.removeEventListener("mouseleave", onLeave);

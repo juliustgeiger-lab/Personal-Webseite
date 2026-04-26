@@ -28,6 +28,35 @@ const AUTO_PHASES: Record<
   unwritten: { rest: 700, reveal: 4000 },
 };
 
+// How long after the last interaction the auto-cycle resumes.
+const RESUME_IDLE_MS = 5000;
+
+// Map progress through the invisible reveal (0..1) to a (--mx, --my) pair.
+// Simulates a ghost cursor entering from off-screen left, hovering near the
+// middle of the word, then drifting off to the right — partial reveals so the
+// user gets curious and tries to see the full word themselves.
+function ghostCursorAt(t: number): [number, number] {
+  if (t <= 0) return [-50, 50];
+  if (t < 0.28) {
+    const local = t / 0.28;
+    const eased = 1 - Math.pow(1 - local, 3); // ease-out
+    return [-50 + (40 - -50) * eased, 50];
+  }
+  if (t < 0.7) {
+    const local = (t - 0.28) / 0.42;
+    // Tiny breathing drift while "hovering"
+    const dx = Math.sin(local * Math.PI * 2) * 5;
+    const dy = Math.cos(local * Math.PI * 2) * 4;
+    return [40 + dx, 50 + dy];
+  }
+  if (t < 1) {
+    const local = (t - 0.7) / 0.3;
+    const eased = local * local * local; // ease-in
+    return [40 + (150 - 40) * eased, 50];
+  }
+  return [150, 50];
+}
+
 export default function InvisibleWord({
   onProgress,
 }: {
@@ -41,6 +70,7 @@ export default function InvisibleWord({
   const [autoMode, setAutoMode] = useState(true);
   const hasHoveredRef = useRef(false);
   const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Mirror the latest word + onProgress into refs so the listeners (attached
   // once with empty deps) always see the current values.
@@ -53,7 +83,8 @@ export default function InvisibleWord({
     onProgressRef.current = onProgress;
   }, [onProgress]);
 
-  // Manual hover/leave behaviour
+  // Manual hover/leave behaviour. Stops auto-cycle on enter; schedules a
+  // resume after RESUME_IDLE_MS of no interaction following a leave.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -62,6 +93,12 @@ export default function InvisibleWord({
       if (swapTimerRef.current) {
         clearTimeout(swapTimerRef.current);
         swapTimerRef.current = null;
+      }
+    };
+    const clearResume = () => {
+      if (resumeTimerRef.current) {
+        clearTimeout(resumeTimerRef.current);
+        resumeTimerRef.current = null;
       }
     };
 
@@ -75,12 +112,11 @@ export default function InvisibleWord({
 
     const onEnter = (e: MouseEvent) => {
       hasHoveredRef.current = true;
-      // First user interaction stops the auto-cycle.
+      // First user interaction interrupts the auto-cycle; resume timer paused.
       setAutoMode(false);
-      // If the auto-cycle had us in a forced reveal, hand the visual back over
-      // to CSS :hover cleanly.
       setForced(false);
       clearSwap();
+      clearResume();
       setCursor(e);
       onProgressRef.current?.(wordRef.current);
     };
@@ -94,6 +130,13 @@ export default function InvisibleWord({
           setWord((curr) => FLOW[curr]);
           swapTimerRef.current = null;
         }, SWAP_DELAY_MS);
+
+        // Resume the auto-cycle after some idle time with no interaction.
+        clearResume();
+        resumeTimerRef.current = setTimeout(() => {
+          setAutoMode(true);
+          resumeTimerRef.current = null;
+        }, RESUME_IDLE_MS);
       }
     };
 
@@ -102,6 +145,7 @@ export default function InvisibleWord({
     el.addEventListener("mouseleave", onLeave);
     return () => {
       clearSwap();
+      clearResume();
       el.removeEventListener("mouseenter", onEnter);
       el.removeEventListener("mousemove", setCursor);
       el.removeEventListener("mouseleave", onLeave);
@@ -109,7 +153,6 @@ export default function InvisibleWord({
   }, []);
 
   // Auto-cycle: rest → force-reveal → fade → swap → next word, calmly looping.
-  // Cancelled the moment the user mouse-enters.
   useEffect(() => {
     if (!autoMode) return;
     const el = ref.current;
@@ -117,17 +160,26 @@ export default function InvisibleWord({
 
     let cancelled = false;
     const timers: ReturnType<typeof setTimeout>[] = [];
-
-    // The fog mask reveals from (--mx, --my). For auto reveals we want the
-    // fog to bloom from the centre of the word.
-    el.style.setProperty("--mx", "50%");
-    el.style.setProperty("--my", "50%");
+    let raf = 0;
 
     const schedule = (fn: () => void, ms: number) => {
       const t = setTimeout(() => {
         if (!cancelled) fn();
       }, ms);
       timers.push(t);
+    };
+
+    const animateGhost = (durationMs: number) => {
+      const start = performance.now();
+      const tick = (now: number) => {
+        if (cancelled) return;
+        const t = Math.min((now - start) / durationMs, 1);
+        const [mx, my] = ghostCursorAt(t);
+        el.style.setProperty("--mx", `${mx}%`);
+        el.style.setProperty("--my", `${my}%`);
+        if (t < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
     };
 
     const runStep = (current: InvisibleWordState) => {
@@ -139,8 +191,17 @@ export default function InvisibleWord({
       schedule(() => {
         if (cancelled) return;
         // Reveal phase
+        if (current === "invisible") {
+          // Start fully off-screen so the reveal builds in, then animate.
+          el.style.setProperty("--mx", "-50%");
+          el.style.setProperty("--my", "50%");
+          animateGhost(reveal);
+        } else {
+          // Centre the (unused) cursor variables for other states.
+          el.style.setProperty("--mx", "50%");
+          el.style.setProperty("--my", "50%");
+        }
         setForced(true);
-        // Mark this word as seen (lets scroll-lock unlock without manual hover)
         onProgressRef.current?.(current);
 
         schedule(() => {
@@ -158,6 +219,7 @@ export default function InvisibleWord({
     return () => {
       cancelled = true;
       timers.forEach(clearTimeout);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, [autoMode]);
 

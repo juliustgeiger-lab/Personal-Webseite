@@ -423,18 +423,15 @@ main.home {
   /* inherit everything */
 }
 
-/* SVG container — overlays the (Geist-sized) ghost. transform: scale lets the
-   cursive render visually larger than the underlying ghost without affecting
-   layout, since the ghost still defines the inline-block's flow size. */
+/* SVG container — overlays the (Geist-sized) ghost. preserveAspectRatio="meet"
+   on the SVG itself keeps the cursive undistorted; no transform scale, so the
+   cursive stays inside the corner-bracket scaffold. */
 .invisible-word--handwrite .uw-svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  overflow: visible;
   pointer-events: none;
-  transform: scale(1.4);
-  transform-origin: center;
 }
 
 /* Caveat fill path. Renders fountain-pen-blue, no stroke. */

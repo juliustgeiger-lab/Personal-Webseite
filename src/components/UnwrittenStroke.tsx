@@ -20,7 +20,7 @@ export default function UnwrittenStroke() {
     <svg
       className="uw-svg"
       viewBox="-110 -110 3541 1480"
-      preserveAspectRatio="none"
+      preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
     >
       <path className="uw-fill" d={UNWRITTEN_D} />

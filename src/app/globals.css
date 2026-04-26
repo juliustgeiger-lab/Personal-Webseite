@@ -649,7 +649,10 @@ section.present {
    shifted up via transform so its tail almost touches the dot. */
 .present-bubble {
   position: absolute;
-  width: clamp(380px, 52vw, 560px);
+  /* Sized to fit the longest question — "Buy the company or watch someone
+     else buy it?" — on a single line. Capped to viewport on small screens. */
+  width: 620px;
+  max-width: calc(100vw - 48px);
   background: var(--bg);
   border: 1px solid var(--rule);
   border-radius: 22px;

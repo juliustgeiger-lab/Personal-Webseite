@@ -49,11 +49,10 @@ export default function RootLayout({
             <span>Julius</span>
           </Link>
           <div className="links">
-            <Link className="link" href="/writing">Essays</Link>
             <Link className="link" href="/#topics">Topics</Link>
             <Link className="link" href="/about">About</Link>
-            <Link href="/#subscribe" className="cta">
-              Subscribe
+            <Link href="/writing" className="cta">
+              Essays
               <span className="arrow">→</span>
             </Link>
           </div>

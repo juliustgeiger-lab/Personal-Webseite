@@ -24,7 +24,7 @@ const AUTO_PHASES: Record<
   { rest: number; reveal: number }
 > = {
   invisible: { rest: 2000, reveal: 2400 },
-  uncertain: { rest: 1700, reveal: 3200 },
+  uncertain: { rest: 1700, reveal: 3800 },
   unwritten: { rest: 700, reveal: 4000 },
 };
 

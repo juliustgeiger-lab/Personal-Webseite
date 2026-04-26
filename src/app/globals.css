@@ -452,49 +452,28 @@ main.home {
   stroke-dashoffset: 100;
 }
 
+/* Linear easing on both — the pen moves at a constant pace across the smooth
+   path (no per-letter accel/decel that read as "lifted and restarted"), and
+   the ink fades at a constant rate (no mid-fade slowdown). */
 .invisible-word--handwrite:hover .uw-pen-path,
 .invisible-word--handwrite.force-reveal .uw-pen-path {
-  animation: uw-pen-stroke 2400ms cubic-bezier(0.4, 0.1, 0.6, 0.95) forwards;
+  animation: uw-pen-stroke 2400ms linear forwards;
 }
 
 .invisible-word--handwrite:hover .uw-text,
 .invisible-word--handwrite.force-reveal .uw-text {
-  animation: uw-dry 2200ms cubic-bezier(0.32, 0.72, 0.4, 1) 2400ms forwards;
+  animation: uw-dry 2200ms linear 2400ms forwards;
 }
 
-/* Variable speed across the cursive word — fast through simple strokes,
-   slow through zigzag (w) and the small loop (e). Each percentage mark
-   targets the dashoffset value when the pen is at that letter section. */
 @keyframes uw-pen-stroke {
   0%   { stroke-dashoffset: 100; }
-  /* 'u' — fast opening curve */
-  10%  { stroke-dashoffset: 88; }
-  /* 'n' — moderate */
-  20%  { stroke-dashoffset: 76; }
-  /* 'w' — slower (multi-stroke zigzag) */
-  37%  { stroke-dashoffset: 58; }
-  /* 'r' */
-  46%  { stroke-dashoffset: 50; }
-  /* 'i' — quick */
-  50%  { stroke-dashoffset: 45; }
-  /* first 't' — moderate (downstroke + jump up) */
-  58%  { stroke-dashoffset: 35; }
-  /* second 't' — slightly quicker repeat */
-  67%  { stroke-dashoffset: 26; }
-  /* 'e' — slower (loop) */
-  80%  { stroke-dashoffset: 15; }
-  /* final 'n' + trailing flourish */
   100% { stroke-dashoffset: 0; }
 }
 
-/* Ink dries — fades unevenly with a faint blur, like pigment soaking in.
-   Animates `opacity` (compositing the rendered text as a whole) rather than
-   `fill-opacity` (which composes per-glyph and makes overlapping cursive
-   letterforms render darker than the rest during the fade). */
+/* Ink dries — uniform opacity fade with a matching gentle blur. opacity (not
+   fill-opacity) so overlapping cursive glyphs composite as one layer. */
 @keyframes uw-dry {
   0%   { opacity: 1; filter: blur(0); }
-  40%  { opacity: 0.6; filter: blur(0.2px); }
-  75%  { opacity: 0.2; filter: blur(0.4px); }
   100% { opacity: 0; filter: blur(0.6px); }
 }
 .invisible-word .scaffold .bracket {

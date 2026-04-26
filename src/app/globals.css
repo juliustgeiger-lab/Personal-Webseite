@@ -437,42 +437,33 @@ main.home {
   transform-origin: center;
 }
 
-/* Three hand-drawn segments. pathLength=100 normalises dasharray math so the
-   same `stroke-dasharray: 100` works on all of them regardless of real length.
-   Default state: stroke fully invisible; the animation pulls it into view. */
-.invisible-word--handwrite .uw-segment {
+/* Single EMS Allure cursive stroke. pathLength=100 normalises dash math so
+   stroke-dasharray=100 gates the whole word's reveal regardless of real path
+   length. The path's twelve M sub-strokes act as instant pen lifts (zero
+   length, no time consumed) — the dash sweeps through them in writing order. */
+.invisible-word--handwrite .uw-stroke {
   fill: none;
   stroke: #1e3a8a;          /* fountain-pen ink blue */
-  stroke-width: 9;
+  stroke-width: 28;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
 }
 
-/* Writing order: main stroke → 250ms lift → crossbar → 100ms lift → i-dot.
-   Easing slows the pen at start and end of each stroke (no mechanical look).
-   Animation only runs while .force-reveal (or :hover) is set; otherwise the
-   stroke stays invisible, ready for the next reveal. */
-.invisible-word--handwrite:hover .uw-main,
-.invisible-word--handwrite.force-reveal .uw-main {
-  animation: uw-draw 2800ms cubic-bezier(0.45, 0.05, 0.25, 1) forwards;
-}
-.invisible-word--handwrite:hover .uw-cross,
-.invisible-word--handwrite.force-reveal .uw-cross {
-  animation: uw-draw 250ms cubic-bezier(0.4, 0, 0.2, 1) 3050ms forwards;
-}
-.invisible-word--handwrite:hover .uw-dot,
-.invisible-word--handwrite.force-reveal .uw-dot {
-  animation: uw-draw 100ms ease-out 3400ms forwards;
+/* Writing animation runs only while .force-reveal (or :hover) is set, so the
+   stroke is invisible between reveals — ready to be re-drawn each cycle. */
+.invisible-word--handwrite:hover .uw-stroke,
+.invisible-word--handwrite.force-reveal .uw-stroke {
+  animation: uw-draw 3500ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
 
-/* Whole SVG fades after the writing finishes, so the auto-cycle's hand-off
-   to the next word is gentle. Auto-cycle reveal=4000ms; writing ends ~3500ms,
-   leaving ~500ms of fade before the state swap. */
+/* The whole SVG fades after the writing finishes so the auto-cycle's hand-off
+   to the next word stays gentle. Auto-cycle reveal=4000ms; writing ends at
+   3500ms, leaving 500ms of fade headroom before the state swap. */
 .invisible-word--handwrite:hover .uw-svg,
 .invisible-word--handwrite.force-reveal .uw-svg {
-  animation: uw-fade 600ms linear 3500ms forwards;
+  animation: uw-fade 500ms linear 3500ms forwards;
 }
 
 @keyframes uw-draw {
@@ -484,12 +475,8 @@ main.home {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .invisible-word--handwrite:hover .uw-main,
-  .invisible-word--handwrite.force-reveal .uw-main,
-  .invisible-word--handwrite:hover .uw-cross,
-  .invisible-word--handwrite.force-reveal .uw-cross,
-  .invisible-word--handwrite:hover .uw-dot,
-  .invisible-word--handwrite.force-reveal .uw-dot {
+  .invisible-word--handwrite:hover .uw-stroke,
+  .invisible-word--handwrite.force-reveal .uw-stroke {
     animation: none;
     stroke-dashoffset: 0;
   }

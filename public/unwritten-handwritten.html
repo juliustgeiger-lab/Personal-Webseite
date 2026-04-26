@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>unwritten — handwriting</title>
+<style>
+  :root { --ink: #1e3a8a; --bg: #f7f5ee; }
+  html, body {
+    margin: 0; min-height: 100vh; background: var(--bg);
+    display: grid; place-items: center;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+  .stage { width: min(880px, 92vw); cursor: pointer; }
+  .handwrite-svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .handwrite-svg path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* pathLength=100 normalises the dash math regardless of true path length.
+     The pen traces each subpath in writing order; M-jumps between letters
+     have zero length, so they read as instant lifts. */
+  .handwrite-svg path {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+  .stage.is-writing .handwrite-svg path {
+    animation: handwrite 3500ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  }
+  @keyframes handwrite {
+    to { stroke-dashoffset: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .handwrite-svg path { stroke-dashoffset: 0; }
+    .stage.is-writing .handwrite-svg path { animation: none; }
+  }
+
+  .hint {
+    margin-top: 1.5rem; text-align: center;
+    color: #6b7280; font-size: 0.85rem; letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage" role="img" aria-label="unwritten">
+    <svg class="handwrite-svg" viewBox="-150 -150 4053 1300"
+         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M47.20,491.00 L-18.90,583.00 L-53.60,677.00 L-56.70,743.30 L-9.45,771.60 L78.80,746.40 L145.00,661.00 L227.00,561.00 L293.00,447.00 L324.00,457.00 L214.00,636.00 L205.00,702.40 L202.00,746.40 L255.00,778.00 L321.00,759.10 L413.00,680.00 L463.00,617.00 M643.00,472.00 L536.00,774.80 L678.00,614.00 L766.00,520.00 L829.00,482.00 L876.00,463.00 L889.00,488.00 L826.00,605.00 L785.00,699.00 L788.00,752.80 L823.00,784.20 L882.00,774.80 L945.00,730.70 L1008.00,668.00 L1043.00,617.00 M1144.30,454.00 L1062.40,573.00 L1018.30,680.00 L1012.00,730.70 L1024.60,768.50 L1071.85,781.10 L1131.70,759.10 L1195.00,687.00 L1270.00,573.00 L1311.00,510.00 L1340.00,513.00 L1280.00,624.00 L1270.00,714.90 L1299.00,768.50 L1355.00,784.20 L1466.00,718.10 L1576.00,595.00 L1626.00,488.00 L1626.00,431.00 L1604.00,378.00 L1551.00,365.00 M1597.50,617.00 L1663.60,513.00 L1783.00,337.00 L1676.20,409.00 L1676.20,435.00 L1688.90,444.00 L1887.00,447.00 L1774.00,586.00 L1710.90,699.00 L1726.60,778.00 L1815.00,771.60 L1925.00,668.00 L1966.00,617.00 M1966.50,617.00 L2035.80,564.00 L2057.90,472.00 L1960.20,714.90 L1979.10,778.00 L2051.50,793.70 L2130.00,730.70 L2181.00,671.00 L2215.00,617.00 M2121.00,324.00 L2092.50,362.00 M2215.50,617.00 L2265.90,576.00 L2300.50,539.00 L2357.00,463.00 L2430.00,343.00 L2464.00,290.00 L2430.00,283.00 L2256.45,649.00 L2240.70,733.90 L2265.90,778.00 L2344.60,771.60 L2439.00,690.00 L2505.00,617.00 M2300.50,454.00 L2505.00,444.00 M2505.50,617.00 L2555.90,576.00 L2590.50,539.00 L2647.00,463.00 L2720.00,343.00 L2754.00,290.00 L2720.00,283.00 L2546.45,649.00 L2530.70,733.90 L2555.90,778.00 L2634.60,771.60 L2729.00,690.00 L2795.00,617.00 M2590.50,454.00 L2795.00,444.00 M2893.10,630.00 L2975.00,589.00 L3044.00,551.00 L3079.00,494.00 L3066.00,450.00 L3007.00,444.00 L2890.00,513.00 L2842.80,548.00 L2792.40,608.00 L2760.90,661.00 L2754.60,711.80 L2776.60,755.90 L2858.50,790.55 L2997.00,755.90 L3041.00,718.10 L3104.00,665.00 L3142.00,617.00 M3321.00,472.00 L3214.00,774.80 L3356.00,614.00 L3444.00,520.00 L3507.00,482.00 L3554.00,463.00 L3567.00,488.00 L3504.00,605.00 L3463.00,699.00 L3466.00,752.80 L3501.00,784.20 L3560.00,774.80 L3623.00,730.70 L3686.00,668.00 L3721.00,617.00" pathLength="100"/>
+    </svg>
+  </div>
+  <p class="hint">click to replay</p>
+  <script>
+    (function () {
+      const stage = document.getElementById('stage');
+      if (!stage) return;
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const start = () => {
+        stage.classList.remove('is-writing');
+        void stage.offsetWidth;
+        stage.classList.add('is-writing');
+      };
+      if (reduced) {
+        stage.classList.add('is-writing');
+      } else if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          if (entries.some((e) => e.isIntersecting)) { start(); io.disconnect(); }
+        }, { threshold: 0.4 });
+        io.observe(stage);
+      } else {
+        start();
+      }
+      stage.addEventListener('click', () => { if (!reduced) start(); });
+    })();
+  </script>
+</body>
+</html>

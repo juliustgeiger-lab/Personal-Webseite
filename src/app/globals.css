@@ -410,25 +410,22 @@ main.home {
    ligatures intact and matches the ghost's layout exactly. */
 
 .invisible-word--handwrite {
-  font-family: var(--font-sacramento), cursive;
+  /* Pen cursor only — keep the parent typography matching the other states
+     (Geist, parent line-height) so the ghost layout box is identical to
+     `invisible` and `uncertain`. The cursive only lives inside the SVG. */
   cursor: url("/pen.svg") 2 42, crosshair;
-  /* Pin line-height to the parent so swapping into Sacramento doesn't push
-     "The future is" upward (Sacramento has taller natural metrics than Geist). */
-  line-height: 1;
 }
 
-/* Sacramento is narrower than Geist — pump the ghost's font-size so the
-   cursive fills the headline's visual width, then claw the line-height back
-   to ~parent so the headline above doesn't jump when this state is active. */
+/* Ghost stays in Geist — pure layout sentinel. No font/size override here so
+   the box dimensions are identical to the other states and "The future is"
+   above doesn't move when this state is active. */
 .invisible-word--handwrite .ghost {
-  font-family: var(--font-sacramento), cursive;
-  font-size: 1.4em;
-  line-height: 0.72;
-  vertical-align: baseline;
+  /* inherit everything */
 }
 
-/* SVG container — overlays the ghost completely so the rendered cursive
-   matches the ghost's box-size and the rest of the headline stays in place. */
+/* SVG container — overlays the (Geist-sized) ghost. transform: scale lets the
+   cursive render visually larger than the underlying ghost without affecting
+   layout, since the ghost still defines the inline-block's flow size. */
 .invisible-word--handwrite .uw-svg {
   position: absolute;
   inset: 0;
@@ -436,6 +433,8 @@ main.home {
   height: 100%;
   overflow: visible;
   pointer-events: none;
+  transform: scale(1.4);
+  transform-origin: center;
 }
 
 .invisible-word--handwrite .uw-text {

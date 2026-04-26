@@ -16,16 +16,29 @@ const FLOW: Record<InvisibleWordState, InvisibleWordState> = {
 // styles take over (fog reveal fades ~520ms; handwrite ends faded already).
 const SWAP_DELAY_MS = 560;
 
+// Auto-cycle phase durations (ms). `rest` = quiet stretch where nothing is
+// revealed (just the corner brackets), `reveal` = how long the force-reveal
+// effect plays for that state.
+const AUTO_PHASES: Record<
+  InvisibleWordState,
+  { rest: number; reveal: number }
+> = {
+  invisible: { rest: 1500, reveal: 1100 },
+  uncertain: { rest: 1200, reveal: 2000 },
+  unwritten: { rest: 700, reveal: 4000 },
+};
+
 export default function InvisibleWord({
   onProgress,
 }: {
-  // Fires on each hover-enter with the word that is currently displayed.
-  // Lets the parent gate things (like scroll) on which words have been seen.
+  // Fires when a word becomes "seen" — either via the auto-cycle reveal or a
+  // real hover. Lets the parent gate things (like scroll) on progress.
   onProgress?: (word: InvisibleWordState) => void;
 } = {}) {
   const ref = useRef<HTMLSpanElement>(null);
   const [word, setWord] = useState<InvisibleWordState>("invisible");
   const [forced, setForced] = useState(false);
+  const [autoMode, setAutoMode] = useState(true);
   const hasHoveredRef = useRef(false);
   const swapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -40,6 +53,7 @@ export default function InvisibleWord({
     onProgressRef.current = onProgress;
   }, [onProgress]);
 
+  // Manual hover/leave behaviour
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -61,15 +75,18 @@ export default function InvisibleWord({
 
     const onEnter = (e: MouseEvent) => {
       hasHoveredRef.current = true;
-      // Cancel a pending swap if the user came back before it fired.
+      // First user interaction stops the auto-cycle.
+      setAutoMode(false);
+      // If the auto-cycle had us in a forced reveal, hand the visual back over
+      // to CSS :hover cleanly.
+      setForced(false);
       clearSwap();
       setCursor(e);
       onProgressRef.current?.(wordRef.current);
     };
 
     const onLeave = () => {
-      // Cycle only advances after a real hover-leave. Each transition still
-      // requires a hover gesture — there's no background timer cycling.
+      // After a real hover, advance to the next word on a delay.
       if (hasHoveredRef.current) {
         hasHoveredRef.current = false;
         clearSwap();
@@ -91,6 +108,59 @@ export default function InvisibleWord({
     };
   }, []);
 
+  // Auto-cycle: rest → force-reveal → fade → swap → next word, calmly looping.
+  // Cancelled the moment the user mouse-enters.
+  useEffect(() => {
+    if (!autoMode) return;
+    const el = ref.current;
+    if (!el) return;
+
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    // The fog mask reveals from (--mx, --my). For auto reveals we want the
+    // fog to bloom from the centre of the word.
+    el.style.setProperty("--mx", "50%");
+    el.style.setProperty("--my", "50%");
+
+    const schedule = (fn: () => void, ms: number) => {
+      const t = setTimeout(() => {
+        if (!cancelled) fn();
+      }, ms);
+      timers.push(t);
+    };
+
+    const runStep = (current: InvisibleWordState) => {
+      if (cancelled) return;
+      setWord(current);
+      setForced(false);
+      const { rest, reveal } = AUTO_PHASES[current];
+
+      schedule(() => {
+        if (cancelled) return;
+        // Reveal phase
+        setForced(true);
+        // Mark this word as seen (lets scroll-lock unlock without manual hover)
+        onProgressRef.current?.(current);
+
+        schedule(() => {
+          if (cancelled) return;
+          setForced(false);
+          schedule(() => {
+            runStep(FLOW[current]);
+          }, SWAP_DELAY_MS);
+        }, reveal);
+      }, rest);
+    };
+
+    runStep(wordRef.current);
+
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [autoMode]);
+
   const modeClass =
     word === "uncertain"
       ? " invisible-word--glitch"
@@ -102,7 +172,10 @@ export default function InvisibleWord({
     <span
       ref={ref}
       className={"invisible-word" + modeClass + (forced ? " force-reveal" : "")}
-      onClick={() => setForced((v) => !v)}
+      onClick={() => {
+        setAutoMode(false);
+        setForced((v) => !v);
+      }}
     >
       {word === "uncertain" ? (
         <UncertainGlitch text={word} />

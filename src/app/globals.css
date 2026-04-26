@@ -704,7 +704,8 @@ section.present {
    second slightly delayed wave for richness. */
 .present-pulse {
   fill: none;
-  stroke: #0a0a0a;
+  /* Same fountain-pen blue as the unwritten ink in beat 1 */
+  stroke: #1e3a8a;
   stroke-width: 1;
   transform-origin: center;
   transform-box: fill-box;

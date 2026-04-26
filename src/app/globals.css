@@ -414,6 +414,11 @@ main.home {
      (Geist, parent line-height) so the ghost layout box is identical to
      `invisible` and `uncertain`. The cursive only lives inside the SVG. */
   cursor: url("/pen.svg") 2 42, crosshair;
+  /* Visual-only scale: the ghost (color:transparent) keeps the layout flow,
+     so "The future is" above doesn't move; the brackets + SVG scale as one
+     unit, so the cursive stays inside the corner-bracket scaffold. */
+  transform: scale(1.4);
+  transform-origin: center center;
 }
 
 /* Ghost stays in Geist — pure layout sentinel. No font/size override here so

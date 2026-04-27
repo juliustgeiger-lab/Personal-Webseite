@@ -1343,6 +1343,12 @@ footer.site {
   line-height: 0.82;
   margin: 0.05em 0.10em -0.10em 0;
   color: var(--ink);
+  /* Instrument Serif only ships 400, so we can't bump font-weight. Adding a
+     stroke in the same colour as the fill thickens every contour uniformly,
+     keeping the letterform but giving it weight. paint-order ensures the
+     stroke renders behind the fill so it doesn't muddy the inner curves. */
+  -webkit-text-stroke: 1.5px var(--ink);
+  paint-order: stroke fill;
 }
 
 /* Post page title gets a touch more line-height than Tailwind's leading-tight

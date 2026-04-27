@@ -1420,11 +1420,11 @@ footer.site {
 .ef-wrap--dark .ef-caption { color: #a3a3a3; }
 
 /* ----- Horizon diagram (body figure) -----
-   Bare figure: no border, no eyebrow label. Top margin kept small so it
-   sits close under the timestamp; bottom margin gives breathing room
-   before the drop-capped opening paragraph. */
+   Bare figure: no border, no eyebrow label. Bottom margin tightened so
+   the inline <PostDate /> sits close under the diagram instead of floating
+   in white space; the date itself adds the gap to the drop-capped opener. */
 .hd-figure {
-  margin: 4px auto 20px;
+  margin: 4px auto 8px;
   padding: 0;
   border: 0;
   background: none;
@@ -1432,6 +1432,15 @@ footer.site {
   flex-direction: column;
   gap: 10px;
   font-variant-numeric: tabular-nums;
+}
+
+/* Inline timestamp rendered by <PostDate /> from MDX. Lives directly under
+   a lead figure on posts with `inlineDate: true` in frontmatter. */
+.post-date-inline {
+  display: block;
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: var(--ink-soft);
 }
 
 .hd-canvas {

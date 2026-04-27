@@ -8,7 +8,8 @@ import HorizonLoop from "@/components/figures/HorizonLoop";
 
 // Components MDX posts can use directly (e.g. <FuturesSimulation />).
 // Register a new in-essay figure here, then drop the tag into the .mdx file.
-const mdxComponents = {
+// PostDate is added per-post inside PostPage so it can closure over post.date.
+const baseMdxComponents = {
   FuturesSimulation,
   HorizonDiagram,
   HorizonLoop,
@@ -33,15 +34,27 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const post = getPost(slug);
   if (!post) notFound();
 
+  // <PostDate /> is an MDX-only component: when a post sets `inlineDate: true`
+  // in its frontmatter, the header timestamp is hidden and the .mdx is in
+  // charge of placing the date — typically right under a lead figure.
+  const PostDate = () => (
+    <time className="post-date-inline tabular-nums">
+      {formatDate(post.date)}
+    </time>
+  );
+  const mdxComponents = { ...baseMdxComponents, PostDate };
+
   return (
     <article className="page-wrap space-y-8">
       <header className="space-y-3">
         <h1 className="post-title text-4xl md:text-6xl font-semibold tracking-tight leading-tight">
           {post.title}
         </h1>
-        <time className="text-sm text-zinc-500 tabular-nums">
-          {formatDate(post.date)}
-        </time>
+        {!post.inlineDate && (
+          <time className="text-sm text-zinc-500 tabular-nums">
+            {formatDate(post.date)}
+          </time>
+        )}
       </header>
       <div className="prose-content">
         <MDXRemote source={post.content} components={mdxComponents} />

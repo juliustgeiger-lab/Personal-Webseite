@@ -10,6 +10,9 @@ export type PostMeta = {
   date: string;
   excerpt?: string;
   tags?: string[];
+  /** When true, the post page hides the header timestamp; the .mdx is then
+   *  responsible for rendering <PostDate /> wherever it wants the date. */
+  inlineDate?: boolean;
 };
 
 export type Post = PostMeta & {
@@ -29,6 +32,7 @@ export function getAllPosts(): PostMeta[] {
       date: data.date ?? "",
       excerpt: data.excerpt,
       tags: Array.isArray(data.tags) ? data.tags : undefined,
+      inlineDate: data.inlineDate === true,
     } as PostMeta;
   });
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -45,6 +49,7 @@ export function getPost(slug: string): Post | null {
     date: data.date ?? "",
     excerpt: data.excerpt,
     tags: Array.isArray(data.tags) ? data.tags : undefined,
+    inlineDate: data.inlineDate === true,
     content,
   };
 }

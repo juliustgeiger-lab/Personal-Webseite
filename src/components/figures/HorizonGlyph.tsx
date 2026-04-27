@@ -73,8 +73,14 @@ export default function HorizonGlyph() {
       const t = (now - start) / 1000;
 
       if (hoveredRef.current) {
-        setEVal(E_MID + E_AMP * Math.sin(t * E_OMEGA));
-        setAVal(A_MID + A_AMP * Math.sin(t * A_OMEGA + A_PHASE));
+        // Ease toward the sine ambient instead of snapping to it. The
+        // hover-out path already eases back toward the default; mirroring
+        // that on the way in removes the jump from default → first sine
+        // value (especially Actual, which can leap ~0.3 in one frame).
+        const eAmbient = E_MID + E_AMP * Math.sin(t * E_OMEGA);
+        const aAmbient = A_MID + A_AMP * Math.sin(t * A_OMEGA + A_PHASE);
+        setEVal((v) => v + (eAmbient - v) * APPROACH);
+        setAVal((v) => v + (aAmbient - v) * APPROACH);
         raf = requestAnimationFrame(tick);
       } else {
         const dE = E_DEFAULT - eRef.current;

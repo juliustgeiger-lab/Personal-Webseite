@@ -3,6 +3,7 @@ import { getAllPosts } from "@/lib/posts";
 import HeroSection from "@/components/HeroSection";
 import PresentSection from "@/components/PresentSection";
 import ManyWorldsSection from "@/components/ManyWorldsSection";
+import { getEssayThumb } from "@/components/figures/thumbs";
 
 export default function Home() {
   const posts = getAllPosts().slice(0, 4);
@@ -33,34 +34,51 @@ export default function Home() {
           </p>
         ) : (
           <div className="work-grid">
-            {posts.map((post, i) => (
-              <Link
-                key={post.slug}
-                href={`/writing/${post.slug}`}
-                className="work-card"
-              >
-                <div className={`thumb ${i % 2 === 0 ? "variant-a" : "variant-b"}`}>
-                  <span className="placeholder">
-                    [ figure {String(i + 1).padStart(2, "0")} — {post.slug.replace(/-/g, " ")} ]
-                  </span>
-                </div>
-                <div className="meta-row">
-                  <span className="proj-title">{post.title}</span>
-                  <span className="mono">{formatMonth(post.date)}</span>
-                </div>
-                <p className="proj-desc">{post.excerpt ?? ""}</p>
-                <div className="tags">
-                  {(post.tags && post.tags.length > 0
-                    ? post.tags
-                    : ["Essay"]
-                  ).map((t) => (
-                    <span key={t} className="tag">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              </Link>
-            ))}
+            {posts.map((post, i) => {
+              const Glyph = getEssayThumb(post.slug);
+              // Cards with a registered glyph use the light variant so the
+              // strokes read; placeholders alternate as before.
+              const variant = Glyph
+                ? "variant-a"
+                : i % 2 === 0
+                  ? "variant-a"
+                  : "variant-b";
+              return (
+                <Link
+                  key={post.slug}
+                  href={`/writing/${post.slug}`}
+                  className="work-card"
+                >
+                  <div
+                    className={`thumb ${variant}${Glyph ? " thumb--glyph" : ""}`}
+                  >
+                    {Glyph ? (
+                      <Glyph />
+                    ) : (
+                      <span className="placeholder">
+                        [ figure {String(i + 1).padStart(2, "0")} —{" "}
+                        {post.slug.replace(/-/g, " ")} ]
+                      </span>
+                    )}
+                  </div>
+                  <div className="meta-row">
+                    <span className="proj-title">{post.title}</span>
+                    <span className="mono">{formatMonth(post.date)}</span>
+                  </div>
+                  <p className="proj-desc">{post.excerpt ?? ""}</p>
+                  <div className="tags">
+                    {(post.tags && post.tags.length > 0
+                      ? post.tags
+                      : ["Essay"]
+                    ).map((t) => (
+                      <span key={t} className="tag">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </section>

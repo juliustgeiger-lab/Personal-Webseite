@@ -2,10 +2,15 @@ import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllPosts, getPost } from "@/lib/posts";
 import FuturesSimulation from "@/components/FuturesSimulation";
+import HorizonDiagram from "@/components/figures/HorizonDiagram";
+import HorizonLoop from "@/components/figures/HorizonLoop";
 
 // Components MDX posts can use directly (e.g. <FuturesSimulation />).
+// Register a new in-essay figure here, then drop the tag into the .mdx file.
 const mdxComponents = {
   FuturesSimulation,
+  HorizonDiagram,
+  HorizonLoop,
 };
 
 export function generateStaticParams() {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
+import { getEssayThumb } from "@/components/figures/thumbs";
 
 export const metadata = {
   title: "Writing — Julius",
@@ -15,26 +16,34 @@ export default function WritingIndex() {
         <p className="text-zinc-500">No posts yet.</p>
       ) : (
         <ul className="space-y-5">
-          {posts.map((post) => (
-            <li key={post.slug}>
-              <Link
-                href={`/writing/${post.slug}`}
-                className="group flex flex-col md:flex-row md:items-baseline md:gap-6"
-              >
-                <span className="text-sm text-zinc-500 md:w-24 md:shrink-0 tabular-nums">
-                  {formatDate(post.date)}
-                </span>
-                <span className="flex-1">
-                  <span className="text-base group-hover:underline underline-offset-4 decoration-zinc-400">
-                    {post.title}
+          {posts.map((post) => {
+            const Glyph = getEssayThumb(post.slug);
+            return (
+              <li key={post.slug}>
+                <Link
+                  href={`/writing/${post.slug}`}
+                  className="group flex flex-col md:flex-row md:items-center md:gap-6"
+                >
+                  {Glyph ? (
+                    <span className="writing-row__thumb" aria-hidden="true">
+                      <Glyph />
+                    </span>
+                  ) : null}
+                  <span className="text-sm text-zinc-500 md:w-24 md:shrink-0 tabular-nums">
+                    {formatDate(post.date)}
                   </span>
-                  {post.excerpt && (
-                    <span className="block text-sm text-zinc-500 mt-1">{post.excerpt}</span>
-                  )}
-                </span>
-              </Link>
-            </li>
-          ))}
+                  <span className="flex-1">
+                    <span className="text-base group-hover:underline underline-offset-4 decoration-zinc-400">
+                      {post.title}
+                    </span>
+                    {post.excerpt && (
+                      <span className="block text-sm text-zinc-500 mt-1">{post.excerpt}</span>
+                    )}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </main>

@@ -1368,6 +1368,231 @@ footer.site {
   line-height: 1.08;
 }
 
+/* ===== ESSAY FIGURE SYSTEM =====
+   Shared chrome for any in-essay figure. See docs/figures.md.
+   ef-* classes wrap interactive figures. hd-* classes belong to the Horizon
+   diagram and its glyph; future figures get their own prefix. */
+.ef-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 36px 0 48px;
+  padding: 24px 22px 22px;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--bg);
+  font-variant-numeric: tabular-nums;
+}
+
+.ef-wrap--dark {
+  background: #0a0a0a;
+  border-color: #1f1f1f;
+  color: #e5e5e5;
+}
+
+.ef-label {
+  display: block;
+  color: var(--ink-faint);
+}
+.ef-wrap--dark .ef-label { color: #737373; }
+
+.ef-body {
+  width: 100%;
+}
+
+.ef-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+}
+
+.ef-caption {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-align: center;
+  max-width: 56ch;
+  margin: 0 auto;
+}
+.ef-wrap--dark .ef-caption { color: #a3a3a3; }
+
+/* ----- Horizon diagram (body figure) ----- */
+.hd-canvas {
+  width: 100%;
+  cursor: default;
+}
+
+.hd-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.hd-axis-label {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  fill: var(--ink-soft);
+  font-weight: 500;
+}
+
+.hd-axis-label--strong { fill: var(--ink); font-weight: 600; }
+.hd-axis-label--faint { fill: var(--ink-faint); font-weight: 400; }
+
+/* Marker hover/drag affordances */
+.hd-marker {
+  pointer-events: none;
+}
+.hd-marker .hd-handle {
+  pointer-events: all;
+  cursor: grab;
+  touch-action: none;
+}
+.hd-marker--active .hd-handle { cursor: grabbing; }
+
+.hd-marker-ring {
+  fill: #1e3a8a;
+  opacity: 0;
+  transition: opacity 200ms ease, r 200ms ease;
+}
+.hd-marker--active .hd-marker-ring {
+  opacity: 0.07;
+}
+
+.hd-chev {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  fill: var(--ink-faint);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  font-weight: 600;
+}
+.hd-marker--active .hd-chev {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hd-marker-ring,
+  .hd-chev { transition: none; }
+}
+
+/* ----- Horizon loop (causal-flow figure) ----- */
+.hl-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.hl-strategy-box {
+  fill: var(--rule-2);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.hl-strategy-pulse {
+  fill: none;
+  stroke: #1e3a8a;
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.hl-strategy-text {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  fill: var(--ink);
+  font-weight: 500;
+  dominant-baseline: middle;
+  text-anchor: middle;
+}
+
+.hl-axis {
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.hl-pin-tick-expected {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.hl-pin-tick-actual {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.hl-pin-dot {
+  fill: var(--ink);
+}
+
+.hl-arc {
+  fill: none;
+  stroke: #1e3a8a;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.hl-arc-informs {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+  stroke-linecap: round;
+}
+
+.hl-flow-label {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  fill: var(--ink-soft);
+  font-weight: 500;
+}
+
+/* ----- Horizon glyph (landing-page thumb) ----- */
+.hd-glyph {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Thumb-as-glyph host — replaces the .placeholder treatment for cards that
+   have a registered glyph. */
+.work-card .thumb.thumb--glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 32px;
+}
+.work-card .thumb.thumb--glyph::before {
+  /* Suppress the diagonal hatch so the glyph reads cleanly */
+  display: none;
+}
+
+/* /writing list — optional small thumb prefix for entries that have a glyph.
+   Off by default — wired in only when the writing index opts in. */
+.writing-row__thumb {
+  width: 96px;
+  height: 64px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--rule-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
 @media (max-width: 900px) {
   main.home { padding: 120px 20px 60px; }
   nav.top { top: 10px; width: calc(100% - 20px); }

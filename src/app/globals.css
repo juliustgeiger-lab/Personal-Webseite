@@ -1330,6 +1330,28 @@ footer.site {
   color: var(--ink-soft);
 }
 
+/* Drop cap on the first paragraph of an essay body. The MDX is wrapped in
+   .prose-content, so :first-of-type targets exactly the opening <p>. The
+   serif cap occupies the first three lines of the paragraph; numbers tuned
+   against .prose-content's 16px / 1.75 line-height (line-height ≈ 28px →
+   3 lines ≈ 84px → font-size ≈ 5.4em × 16px ≈ 86px works visually). */
+.prose-content > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-instrument), Georgia, serif;
+  font-weight: 400;
+  font-size: 5.4em;
+  line-height: 0.82;
+  margin: 0.05em 0.10em -0.10em 0;
+  color: var(--ink);
+}
+
+/* Post page title gets a touch more line-height than Tailwind's leading-tight
+   so the bumped-up h1 (text-4xl md:text-6xl) doesn't crowd descenders on
+   multi-line titles. Single-line titles unaffected. */
+.post-title {
+  line-height: 1.08;
+}
+
 @media (max-width: 900px) {
   main.home { padding: 120px 20px 60px; }
   nav.top { top: 10px; width: calc(100% - 20px); }

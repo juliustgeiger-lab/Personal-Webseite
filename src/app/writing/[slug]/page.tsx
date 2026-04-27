@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllPosts, getPost } from "@/lib/posts";
 import FuturesSimulation from "@/components/FuturesSimulation";
@@ -31,10 +30,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   return (
     <article className="page-wrap space-y-8">
       <header className="space-y-3">
-        <Link href="/writing" className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-          ← Writing
-        </Link>
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight leading-tight">
+        <h1 className="post-title text-4xl md:text-6xl font-semibold tracking-tight leading-tight">
           {post.title}
         </h1>
         <time className="text-sm text-zinc-500 tabular-nums">

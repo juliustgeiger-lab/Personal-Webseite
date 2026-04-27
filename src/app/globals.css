@@ -797,11 +797,14 @@ section.many-worlds {
 }
 
 /* Typewriter ending on the second line of the many-worlds headline.
-   Same fountain-pen blue as the unwritten ink in beat 1. */
+   Same fountain-pen blue as the unwritten ink in beat 1. margin-top opens
+   up the gap to the static "Some decisions perform in" line above so the
+   eye can resolve "what's stable vs what's changing" in one glance. */
 .typewriter {
   display: inline-block;
   white-space: nowrap;
   color: #1e3a8a;
+  margin-top: 0.45em;
 }
 
 .typewriter__caret {

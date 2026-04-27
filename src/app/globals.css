@@ -1420,10 +1420,11 @@ footer.site {
 .ef-wrap--dark .ef-caption { color: #a3a3a3; }
 
 /* ----- Horizon diagram (body figure) -----
-   Bare figure: no border, no eyebrow label, generous vertical breathing
-   room so it reads as part of the prose flow rather than a sidebar object. */
+   Bare figure: no border, no eyebrow label. Top margin kept small so it
+   sits close under the timestamp; bottom margin gives breathing room
+   before the drop-capped opening paragraph. */
 .hd-figure {
-  margin: 32px auto 28px;
+  margin: 4px auto 20px;
   padding: 0;
   border: 0;
   background: none;

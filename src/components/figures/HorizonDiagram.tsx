@@ -22,7 +22,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
  */
 
 const VIEW_W = 760;
-const VIEW_H = 220;
+// Visible window of the SVG. Internal element coordinates (AXIS_Y=132, label
+// positions, etc.) stay in the original 0–220 design space — VIEW_Y_TOP +
+// VIEW_H just trim the empty bands above and below the diagram so the
+// rendered figure isn't padded with ~half its height of whitespace.
+const VIEW_Y_TOP = 84;
+const VIEW_H = 96;
 const PAD_L = 48;
 const PAD_R = 48;
 const AXIS_Y = 132;
@@ -143,7 +148,7 @@ export default function HorizonDiagram() {
         <svg
           ref={svgRef}
           className="hd-svg"
-          viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+          viewBox={`0 ${VIEW_Y_TOP} ${VIEW_W} ${VIEW_H}`}
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label="Time axis with two draggable markers, expected and actual horizon. The strategy band runs from now to expected; the hatched slice between expected and actual is the misallocation."

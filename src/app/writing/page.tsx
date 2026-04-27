@@ -10,49 +10,75 @@ export default function WritingIndex() {
   const posts = getAllPosts();
 
   return (
-    <main className="page-wrap space-y-10">
-      <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Writing</h1>
+    <main className="writing-index">
+      <div className="section-head">
+        <div className="title-block">
+          <span className="mono-up kicker">§ — All essays</span>
+          <h1>Writing</h1>
+        </div>
+        <div className="meta">
+          <span className="mono-up">{posts.length} essays</span>
+        </div>
+      </div>
+
       {posts.length === 0 ? (
-        <p className="text-zinc-500">No posts yet.</p>
+        <p className="mono" style={{ color: "var(--ink-faint)" }}>
+          No essays published yet.
+        </p>
       ) : (
-        <ul className="space-y-5">
-          {posts.map((post) => {
+        <div className="work-grid">
+          {posts.map((post, i) => {
             const Glyph = getEssayThumb(post.slug);
+            const variant = Glyph
+              ? "variant-a"
+              : i % 2 === 0
+                ? "variant-a"
+                : "variant-b";
             return (
-              <li key={post.slug}>
-                <Link
-                  href={`/writing/${post.slug}`}
-                  className="group flex flex-col md:flex-row md:items-center md:gap-6"
+              <Link
+                key={post.slug}
+                href={`/writing/${post.slug}`}
+                className="work-card"
+              >
+                <div
+                  className={`thumb ${variant}${Glyph ? " thumb--glyph" : ""}`}
                 >
                   {Glyph ? (
-                    <span className="writing-row__thumb" aria-hidden="true">
-                      <Glyph />
+                    <Glyph />
+                  ) : (
+                    <span className="placeholder">
+                      [ figure {String(i + 1).padStart(2, "0")} —{" "}
+                      {post.slug.replace(/-/g, " ")} ]
                     </span>
-                  ) : null}
-                  <span className="text-sm text-zinc-500 md:w-24 md:shrink-0 tabular-nums">
-                    {formatDate(post.date)}
-                  </span>
-                  <span className="flex-1">
-                    <span className="text-base group-hover:underline underline-offset-4 decoration-zinc-400">
-                      {post.title}
+                  )}
+                </div>
+                <div className="meta-row">
+                  <span className="proj-title">{post.title}</span>
+                  <span className="mono">{formatMonth(post.date)}</span>
+                </div>
+                <p className="proj-desc">{post.excerpt ?? ""}</p>
+                <div className="tags">
+                  {(post.tags && post.tags.length > 0
+                    ? post.tags
+                    : ["Essay"]
+                  ).map((t) => (
+                    <span key={t} className="tag">
+                      {t}
                     </span>
-                    {post.excerpt && (
-                      <span className="block text-sm text-zinc-500 mt-1">{post.excerpt}</span>
-                    )}
-                  </span>
-                </Link>
-              </li>
+                  ))}
+                </div>
+              </Link>
             );
           })}
-        </ul>
+        </div>
       )}
     </main>
   );
 }
 
-function formatDate(iso: string): string {
+function formatMonth(iso: string): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }

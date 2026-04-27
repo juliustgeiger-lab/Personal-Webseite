@@ -981,6 +981,48 @@ section.work {
   letter-spacing: 0.02em;
 }
 
+/* "All essays →" CTA right under the latest-essays grid on the home page.
+   Aligned to the trailing edge of the grid, soft-ink so it doesn't compete
+   with the cards above; arrow translates on hover for the same affordance
+   the nav and post-author byline use. */
+.work-cta {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+.work-cta:hover { color: var(--ink); }
+.work-cta .arrow {
+  display: inline-block;
+  transition: transform 200ms ease;
+}
+.work-cta:hover .arrow { transform: translateX(3px); }
+
+/* /writing index page — mirrors the home `section.work` layout (1200px,
+   2-column grid, same .work-card cards) but as a top-level page rather
+   than a snap section, so no min-height, no scroll-snap, no centering. */
+.writing-index {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 140px 32px 80px;
+  position: relative;
+  z-index: 2;
+}
+.writing-index .section-head .title-block h1 {
+  font-family: var(--font-geist-sans), "Geist", sans-serif;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+
 /* ===== PRINCIPLES ===== */
 section.principles {
   max-width: 1200px;

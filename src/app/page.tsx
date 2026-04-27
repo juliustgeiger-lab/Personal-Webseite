@@ -20,7 +20,7 @@ export default function Home() {
         <div className="section-head">
           <div className="title-block">
             <span className="mono-up kicker">§ 01 — Recent essays</span>
-            <h2>Notes on making bets when the outcome space isn&apos;t stationary.</h2>
+            <h2>Latest Notes on:</h2>
           </div>
           <div className="meta">
             <span className="mono-up">
@@ -81,6 +81,9 @@ export default function Home() {
             })}
           </div>
         )}
+        <Link href="/writing" className="work-cta">
+          All essays <span className="arrow" aria-hidden="true">→</span>
+        </Link>
       </section>
 
       <section className="principles" id="topics">

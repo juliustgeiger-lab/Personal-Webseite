@@ -46,7 +46,7 @@ export default function RootLayout({
         <nav className="top">
           <Link href="/" className="brand">
             <span className="dot">※</span>
-            <span>Julius</span>
+            <span>Index</span>
           </Link>
           <div className="links">
             <Link className="link" href="/#topics">Topics</Link>

@@ -3,42 +3,54 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
- * HorizonLoop — causal view, v8.
+ * HorizonLoop — causal view, v10.
  *
- * Layout:
- *   - "DECISION STRATEGY" — bold Geist Sans, top-left.
- *   - "TIME HORIZON"      — bold Geist Sans, top-RIGHT (mirrors).
- *   - Strategy anchor below DECISION STRATEGY: target-style ring + dot.
- *   - Two parallel horizon lines: solid ACTUAL on top, dashed EXPECTED below.
+ * Intro (triggered when the figure scrolls into view):
+ *   1. A single horizon line appears.
+ *   2. "TIME HORIZON" header fades in.
+ *   3. The line splits into ACTUAL (top, solid) and EXPECTED (below, dashed).
+ *   4. "DECISION STRATEGY" header + anchor fade in.
+ *   Then the event loop begins.
  *
- * Arrows (3px, solid, with arrowheads):
- *   - INFORMS    (blue) — Expected dot → Strategy anchor.
- *                Persists at full alpha across the calm gap. Only begins
- *                fading once the NEW informs arrow has started drawing
- *                plus a small pause.
- *   - INFLUENCES (ink) — Strategy → Actual landing point.
- *                Same persistence rule: stays until the new ink arrow
- *                draws.
+ * Three event types fire endlessly at irregular intervals:
  *
- * Each arrow's path endpoint is set back from its target marker so the
- * arrowhead lands with a small visible gap, not on top of the marker.
+ *   A — Info on Expected. Something is read or learned. A blue dot appears
+ *       on the EXPECTED line, sparks a blue arrow back to Strategy, the
+ *       Strategy pulses. The actual horizon doesn't change.
+ *       Banner: "Annual checkup — no change." etc.
  *
- * Each event tells one story:
- *   1. New blue dot lands on EXPECTED with concentric waves.
- *   2. Blue informs arrow draws back to Strategy.
- *   3. Strategy anchor pulses.
- *   4. Ink influences arrow draws forward to Actual.
- *   5. Actual eases — or stays put (≈30% of events leave it unchanged).
+ *   B — Life event hits Actual directly. Concentric INK waves appear on the
+ *       ACTUAL line at a new position. The actual marker eases to it. The
+ *       persistent ink influences arrow follows.
+ *       Banner: "Cancer diagnosis — horizon shortens." / "Started running
+ *       — horizon extends." etc.
  *
- * Slower than v7 — each beat has more breathing room.
+ *   C — Full chain. Blue dot on EXPECTED → blue arrow to Strategy →
+ *       Strategy pulses → NEW ink arrow draws to a NEW actual position →
+ *       old ink arrow fades.
+ *       Banner: "New medical breakthrough — strategy adapts. Horizon
+ *       extends." etc.
+ *
+ * Visual conventions:
+ *   - Blue waves / blue arrow = something arriving on the EXPECTED side
+ *     (a fact, study, projection update).
+ *   - Ink waves / ink arrow = the strategy's relationship to ACTUAL, or a
+ *     direct life event landing on actual.
+ *   - 4px lines, 3px lines for old/fading. Manual rotated arrowheads point
+ *     exactly at their target dots.
+ *
+ * Always-visible BANNER below the figure shows the most recent event's
+ * effect, with a soft crossfade between events.
  *
  * Interactive: drag the EXPECTED pin to reposition it. The persistent
  * informs arrow follows the cursor in real time. Auto-events resume on
  * release.
+ *
+ * prefers-reduced-motion: settles to a representative still state.
  */
 
 const VIEW_W = 760;
-const VIEW_H = 220;
+const VIEW_H = 240; // taller than v9 to fit the banner row
 
 // Headers
 const HEADER_Y = 72;
@@ -56,36 +68,96 @@ const LINE_X2 = 720;
 const LINE_W = LINE_X2 - LINE_X1;
 const ACTUAL_Y = 120;
 const EXPECTED_Y = 148;
+const SPLIT_MID_Y = (ACTUAL_Y + EXPECTED_Y) / 2; // 134 — pre-split single line
 
-// Per-event timing — slower than v7
-const EVENT_DURATION_MS = 6500;
-const PHASE = {
-  wave:           [0,    1500],
-  expectedShift:  [0,    1300],
-  informsArrow:   [1100, 2300],
-  strategyPulse:  [2100, 3000],
-  influencesArrow:[2800, 4100],
-  actualEase:     [3700, 4400],
-  // Old arrows fade only after the new arrow has started drawing + a small
-  // pause, so the new is already visibly drawing in by the time the old
-  // begins to leave.
-  oldInformsFade:    [1900, 3300],
-  oldInfluencesFade: [3300, 4700],
-} as const;
+// Banner
+const BANNER_Y = 215;
 
-const CALM_MIN_MS = 1800;
-const CALM_RANGE_MS = 2400;
+// Intro reveal — total ~3.6s once the figure enters viewport
+const INTRO_DURATION_MS = 3600;
+const INTRO_PHASE = {
+  singleLine:    [0,    300],   // single line fades in
+  thHeader:      [300,  900],   // "TIME HORIZON" appears
+  split:         [900,  1900],  // line splits into actual + expected
+  lineLabels:    [1700, 2200],  // ACTUAL / EXPECTED right-end labels
+  stratBlock:    [2200, 3000],  // DECISION STRATEGY header + anchor
+  // Done at 3000–3600 (settle).
+};
 
-const NO_CHANGE_PROB = 0.30;
+// Event timing per type (within a single event)
+const TYPE_PHASES = {
+  A: {
+    duration: 4000,
+    waveExpected: [0, 1500] as const,
+    expectedShift: [0, 1300] as const,
+    informsArrow: [1100, 2300] as const,
+    strategyPulse: [2100, 3000] as const,
+    oldInformsFade: [1900, 3300] as const,
+    fade: [3000, 4000] as const,
+  },
+  B: {
+    duration: 3500,
+    waveActual: [0, 1500] as const,
+    actualEase: [600, 2200] as const,
+    fade: [2400, 3500] as const,
+  },
+  C: {
+    duration: 6500,
+    waveExpected: [0, 1500] as const,
+    expectedShift: [0, 1300] as const,
+    informsArrow: [1100, 2300] as const,
+    strategyPulse: [2100, 3000] as const,
+    influencesArrow: [2800, 4100] as const,
+    actualEase: [3700, 4400] as const,
+    oldInformsFade: [1900, 3300] as const,
+    oldInfluencesFade: [3300, 4700] as const,
+  },
+};
+
+const CALM_MIN_MS = 1500;
+const CALM_RANGE_MS = 2200;
 
 const EXPECTED_INITIAL = 0.66;
-const ACTUAL_INITIAL = 0.38;
+const ACTUAL_INITIAL = 0.42;
 const EXPECTED_MIN = 0.46;
 const EXPECTED_RANGE = 0.40;
-const ACTUAL_MIN = 0.18;
-const ACTUAL_RANGE = 0.66;
 
-const SCHEDULE_LEN = 80;
+const SCHEDULE_LEN = 100;
+
+const MESSAGES_A = [
+  "Annual checkup — no change.",
+  "Mortality study read — projection holds.",
+  "Birthday passed — horizon unchanged.",
+  "Friend's diagnosis — reflection only.",
+  "New paper on aging — no update.",
+  "Doctor's optimistic note — strategy holds.",
+];
+const MESSAGES_B_SHORT = [
+  "Cancer diagnosis — horizon shortens.",
+  "Started smoking — horizon shrinks.",
+  "Heart event — horizon shrinks.",
+  "Started base jumping — horizon shortens.",
+  "Pandemic exposure — horizon shortens.",
+  "Severe accident — horizon shrinks.",
+];
+const MESSAGES_B_LONG = [
+  "Life-extension drug approved — horizon extends.",
+  "Started running daily — horizon extends.",
+  "Quit smoking — horizon recovers.",
+  "Genetic therapy succeeds — horizon extends.",
+  "Found a new doctor — horizon extends.",
+  "Sleep finally fixed — horizon extends.",
+];
+const MESSAGES_C_SHORT = [
+  "New diagnosis — strategy adjusts. Horizon shortens.",
+  "Family history revealed — strategy hardens. Horizon shrinks.",
+  "Bad scan — strategy pivots. Horizon shrinks.",
+];
+const MESSAGES_C_LONG = [
+  "Medical breakthrough — strategy adapts. Horizon extends.",
+  "Optimistic projection — strategy loosens. Horizon extends.",
+  "New protocol — strategy widens. Horizon extends.",
+];
 
 function ramp(x: number, from: number, to: number) {
   if (x <= from) return 0;
@@ -95,6 +167,7 @@ function ramp(x: number, from: number, to: number) {
 function ease(t: number) { return 1 - Math.pow(1 - t, 3); }
 function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
 function clamp01ish(x: number) { return Math.max(0.04, Math.min(0.96, x)); }
+function clampActual(x: number) { return Math.max(0.10, Math.min(0.92, x)); }
 
 function rngStream(seed: number) {
   let s = (seed * 0x9E3779B1) >>> 0;
@@ -126,13 +199,9 @@ function partialQuadratic(
   return `M ${x1} ${y1} Q ${p01x.toFixed(2)} ${p01y.toFixed(2)} ${ex.toFixed(2)} ${ey.toFixed(2)}`;
 }
 
-// Endpoint helpers — set back from target so manual arrowheads land with a
-// clean visible gap. The path's natural tangent doesn't matter for direction
-// because we draw the arrowhead manually and rotate it to point AT the target.
-const INFL_END_DY = 18; // path ends 18px above the actual line
+const INFL_END_DY = 18;
 const INFORMS_END_X = 158;
 const INFORMS_END_Y = 150;
-// Manual arrowhead dimensions
 const ARROW_LEN = 6;
 const ARROW_HALF = 3;
 
@@ -160,44 +229,118 @@ function buildInformsPath(sourceExpectedNorm: number, progress: number) {
     : partialQuadratic(sx, sy, cx, cy, ex, ey, ease(progress));
 }
 
+type EventType = "A" | "B" | "C";
+
 type EventEntry = {
   startMs: number;
+  type: EventType;
   newExpected: number;
   newActual: number;
-  changesActual: boolean;
+  message: string;
 };
 
 function buildEvents() {
   const r = rngStream(31);
   const list: EventEntry[] = [];
-  let t = 700;
-  let prevA = ACTUAL_INITIAL;
+  // First event always starts after the intro completes.
+  let t = INTRO_DURATION_MS + 700;
+  let prevExpected = EXPECTED_INITIAL;
+  let prevActual = ACTUAL_INITIAL;
+  let lastType: EventType | null = null;
+
   for (let i = 0; i < SCHEDULE_LEN; i++) {
-    const newE = EXPECTED_MIN + r() * EXPECTED_RANGE;
-    const changes = r() > NO_CHANGE_PROB;
-    const newA = changes ? ACTUAL_MIN + r() * ACTUAL_RANGE : prevA;
-    list.push({ startMs: t, newExpected: newE, newActual: newA, changesActual: changes });
-    prevA = newA;
+    // Pick a type, but avoid repeating the same type three times in a row.
+    let type: EventType;
+    const tr = r();
+    if (tr < 0.34) type = "A";
+    else if (tr < 0.70) type = "B";
+    else type = "C";
+    if (type === lastType && r() < 0.5) {
+      // Reroll once if same as last
+      const tr2 = r();
+      type = tr2 < 0.5 ? (type === "A" ? "B" : "A") : (type === "C" ? "B" : "C");
+    }
+    lastType = type;
+
+    let newExpected = prevExpected;
+    let newActual = prevActual;
+    let message = "";
+
+    if (type === "A") {
+      newExpected = EXPECTED_MIN + r() * EXPECTED_RANGE;
+      message = MESSAGES_A[Math.floor(r() * MESSAGES_A.length)];
+    } else if (type === "B") {
+      const direction = r() < 0.5 ? "short" : "long";
+      if (direction === "short") {
+        newActual = clampActual(prevActual - 0.10 - r() * 0.22);
+        message = MESSAGES_B_SHORT[Math.floor(r() * MESSAGES_B_SHORT.length)];
+      } else {
+        newActual = clampActual(prevActual + 0.08 + r() * 0.20);
+        message = MESSAGES_B_LONG[Math.floor(r() * MESSAGES_B_LONG.length)];
+      }
+    } else {
+      // C
+      newExpected = EXPECTED_MIN + r() * EXPECTED_RANGE;
+      const direction = r() < 0.5 ? "short" : "long";
+      if (direction === "short") {
+        newActual = clampActual(prevActual - 0.12 - r() * 0.20);
+        message = MESSAGES_C_SHORT[Math.floor(r() * MESSAGES_C_SHORT.length)];
+      } else {
+        newActual = clampActual(prevActual + 0.12 + r() * 0.20);
+        message = MESSAGES_C_LONG[Math.floor(r() * MESSAGES_C_LONG.length)];
+      }
+    }
+
+    list.push({ startMs: t, type, newExpected, newActual, message });
+    prevExpected = newExpected;
+    prevActual = newActual;
     const calm = CALM_MIN_MS + r() * CALM_RANGE_MS;
-    t += EVENT_DURATION_MS + calm;
+    t += TYPE_PHASES[type].duration + calm;
   }
   return list;
 }
 
 export default function HorizonLoop() {
   const [, setTick] = useState(0);
+  const [hasEntered, setHasEntered] = useState(false);
   const [dragNorm, setDragNorm] = useState<number | null>(null);
   const [hovered, setHovered] = useState(false);
+
   const startRef = useRef<number | null>(null);
   const reducedRef = useRef(false);
+  const figureRef = useRef<HTMLElement | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef(false);
 
   const events = useMemo(() => buildEvents(), []);
 
+  // IntersectionObserver — start everything once the figure enters viewport.
   useEffect(() => {
     if (typeof window === "undefined") return;
     reducedRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const el = figureRef.current;
+    if (!el) {
+      setHasEntered(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setHasEntered(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.25 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // rAF loop — runs once entered.
+  useEffect(() => {
+    if (!hasEntered) return;
     if (reducedRef.current) {
       setTick(1);
       return;
@@ -209,7 +352,7 @@ export default function HorizonLoop() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [hasEntered]);
 
   const pointerToNorm = useCallback((clientX: number) => {
     const svg = svgRef.current;
@@ -237,22 +380,39 @@ export default function HorizonLoop() {
     if (ev) (ev.target as Element).releasePointerCapture?.(ev.pointerId);
   };
 
+  // Time accounting
   const now = typeof performance !== "undefined" ? performance.now() : 0;
-  if (startRef.current === null && !reducedRef.current) startRef.current = now;
+  if (startRef.current === null && hasEntered && !reducedRef.current) {
+    startRef.current = now;
+  }
   const elapsed = startRef.current === null ? 0 : now - startRef.current;
   const isDragging = dragNorm !== null;
+
+  // Intro progress
+  const introT = reducedRef.current
+    ? 1
+    : Math.min(1, elapsed / INTRO_DURATION_MS);
+
+  const introSingleLine = ramp(elapsed, INTRO_PHASE.singleLine[0], INTRO_PHASE.singleLine[1]);
+  const introTHHeader = ramp(elapsed, INTRO_PHASE.thHeader[0], INTRO_PHASE.thHeader[1]);
+  const introSplit = ramp(elapsed, INTRO_PHASE.split[0], INTRO_PHASE.split[1]);
+  const introLineLabels = ramp(elapsed, INTRO_PHASE.lineLabels[0], INTRO_PHASE.lineLabels[1]);
+  const introStratBlock = ramp(elapsed, INTRO_PHASE.stratBlock[0], INTRO_PHASE.stratBlock[1]);
+  const introDone = introT >= 1;
 
   // Find active or last-completed event
   let activeIdx = -1;
   let lastIdx = -1;
-  for (let i = 0; i < events.length; i++) {
-    const e = events[i];
-    if (elapsed >= e.startMs && elapsed < e.startMs + EVENT_DURATION_MS) {
-      activeIdx = i;
-      break;
-    }
-    if (elapsed >= e.startMs + EVENT_DURATION_MS) {
-      lastIdx = i;
+  if (introDone || reducedRef.current) {
+    for (let i = 0; i < events.length; i++) {
+      const e = events[i];
+      if (elapsed >= e.startMs && elapsed < e.startMs + TYPE_PHASES[e.type].duration) {
+        activeIdx = i;
+        break;
+      }
+      if (elapsed >= e.startMs + TYPE_PHASES[e.type].duration) {
+        lastIdx = i;
+      }
     }
   }
   const activeEvent = activeIdx >= 0 ? events[activeIdx] : null;
@@ -266,15 +426,25 @@ export default function HorizonLoop() {
     scheduledExpected = 0.66;
     scheduledActual = 0.32;
   } else if (activeEvent) {
-    const prevExp = lastEvent ? lastEvent.newExpected : EXPECTED_INITIAL;
-    const prevAct = lastEvent ? lastEvent.newActual : ACTUAL_INITIAL;
-    const eShift = ease(ramp(eventT, PHASE.expectedShift[0], PHASE.expectedShift[1]));
-    scheduledExpected = lerp(prevExp, activeEvent.newExpected, eShift);
-    if (activeEvent.changesActual) {
-      const aShift = ease(ramp(eventT, PHASE.actualEase[0], PHASE.actualEase[1]));
-      scheduledActual = lerp(prevAct, activeEvent.newActual, aShift);
+    const prevE = lastEvent ? lastEvent.newExpected : EXPECTED_INITIAL;
+    const prevA = lastEvent ? lastEvent.newActual : ACTUAL_INITIAL;
+
+    if (activeEvent.type === "A") {
+      const ph = TYPE_PHASES.A;
+      const eShift = ease(ramp(eventT, ph.expectedShift[0], ph.expectedShift[1]));
+      scheduledExpected = lerp(prevE, activeEvent.newExpected, eShift);
+      scheduledActual = prevA;
+    } else if (activeEvent.type === "B") {
+      const ph = TYPE_PHASES.B;
+      scheduledExpected = prevE;
+      const aShift = ease(ramp(eventT, ph.actualEase[0], ph.actualEase[1]));
+      scheduledActual = lerp(prevA, activeEvent.newActual, aShift);
     } else {
-      scheduledActual = prevAct;
+      const ph = TYPE_PHASES.C;
+      const eShift = ease(ramp(eventT, ph.expectedShift[0], ph.expectedShift[1]));
+      scheduledExpected = lerp(prevE, activeEvent.newExpected, eShift);
+      const aShift = ease(ramp(eventT, ph.actualEase[0], ph.actualEase[1]));
+      scheduledActual = lerp(prevA, activeEvent.newActual, aShift);
     }
   } else if (lastEvent) {
     scheduledExpected = lastEvent.newExpected;
@@ -289,77 +459,142 @@ export default function HorizonLoop() {
   const expectedX = LINE_X1 + expectedNorm * LINE_W;
   const actualX = LINE_X1 + actualNorm * LINE_W;
   const newExpectedX = activeEvent ? LINE_X1 + activeEvent.newExpected * LINE_W : expectedX;
-  const targetActualX = activeEvent ? LINE_X1 + activeEvent.newActual * LINE_W : actualX;
+  const newActualX = activeEvent ? LINE_X1 + activeEvent.newActual * LINE_W : actualX;
 
-  const showEventVisuals = !isDragging;
+  const showEventVisuals = !isDragging && introDone;
 
-  // Concentric waves on the new Expected dot
-  const waves = activeEvent && showEventVisuals
-    ? [0, 280, 560].map((delayMs) => {
-        const localMs = eventT - delayMs;
-        if (localMs < 0 || localMs > 1100) return null;
-        const wt = localMs / 1100;
-        return { r: 6 + wt * 30, opacity: Math.max(0, 0.7 * (1 - wt)) };
-      })
-    : [];
+  // Type-specific computations
+  type TypeVisual = {
+    expectedWaves: Array<{ r: number; opacity: number }>;
+    actualWaves: Array<{ r: number; opacity: number }>;
+    informsT: number;          // 0..1 NEW informs arrow draw
+    influencesT: number;       // 0..1 NEW influences arrow draw
+    stratPulse: { r: number; opacity: number } | null;
+    oldInformsAlpha: number;
+    oldInfluencesAlpha: number;
+    landingFlash: { r: number; opacity: number } | null;
+  };
+  const v: TypeVisual = {
+    expectedWaves: [],
+    actualWaves: [],
+    informsT: 0,
+    influencesT: 0,
+    stratPulse: null,
+    oldInformsAlpha: 0,
+    oldInfluencesAlpha: 0,
+    landingFlash: null,
+  };
 
-  // Strategy pulse ring
-  const stratPulseT = activeEvent && showEventVisuals
-    ? ramp(eventT, PHASE.strategyPulse[0], PHASE.strategyPulse[1])
-    : 0;
-  const stratPulse = stratPulseT > 0 && stratPulseT < 1
-    ? { r: STRAT_RING_R + stratPulseT * 18, opacity: Math.max(0, 0.7 * (1 - stratPulseT)) }
-    : null;
+  // Helper for waves
+  const computeWaves = (start: number, duration: number, count = 3) => {
+    const out: Array<{ r: number; opacity: number } | null> = [];
+    for (let i = 0; i < count; i++) {
+      const delay = i * 280;
+      const localMs = eventT - start - delay;
+      if (localMs < 0 || localMs > duration) {
+        out.push(null);
+        continue;
+      }
+      const wt = localMs / duration;
+      out.push({ r: 6 + wt * 30, opacity: Math.max(0, 0.7 * (1 - wt)) });
+    }
+    return out.filter((w): w is { r: number; opacity: number } => w !== null);
+  };
 
-  // ─── INFORMS arrow (BLUE) ───
-  let oldInformsAnchor: number | null = null;
-  let oldInformsAlpha = 0;
-  if (isDragging) {
-    oldInformsAnchor = expectedNorm;
-    oldInformsAlpha = 1;
-  } else if (activeEvent && lastEvent) {
-    oldInformsAnchor = lastEvent.newExpected;
-    oldInformsAlpha = 1 - ramp(eventT, PHASE.oldInformsFade[0], PHASE.oldInformsFade[1]);
-  } else if (lastEvent) {
-    oldInformsAnchor = lastEvent.newExpected;
-    oldInformsAlpha = 1;
+  if (activeEvent && showEventVisuals) {
+    if (activeEvent.type === "A") {
+      const ph = TYPE_PHASES.A;
+      v.expectedWaves = computeWaves(ph.waveExpected[0], 1100);
+      v.informsT = ramp(eventT, ph.informsArrow[0], ph.informsArrow[1]);
+      const sT = ramp(eventT, ph.strategyPulse[0], ph.strategyPulse[1]);
+      v.stratPulse = sT > 0 && sT < 1
+        ? { r: STRAT_RING_R + sT * 18, opacity: Math.max(0, 0.7 * (1 - sT)) }
+        : null;
+      v.oldInformsAlpha = 1 - ramp(eventT, ph.oldInformsFade[0], ph.oldInformsFade[1]);
+    } else if (activeEvent.type === "B") {
+      const ph = TYPE_PHASES.B;
+      // INK waves on actual line at the new actual position
+      v.actualWaves = computeWaves(ph.waveActual[0], 1100);
+    } else {
+      // C
+      const ph = TYPE_PHASES.C;
+      v.expectedWaves = computeWaves(ph.waveExpected[0], 1100);
+      v.informsT = ramp(eventT, ph.informsArrow[0], ph.informsArrow[1]);
+      const sT = ramp(eventT, ph.strategyPulse[0], ph.strategyPulse[1]);
+      v.stratPulse = sT > 0 && sT < 1
+        ? { r: STRAT_RING_R + sT * 18, opacity: Math.max(0, 0.7 * (1 - sT)) }
+        : null;
+      v.influencesT = ramp(eventT, ph.influencesArrow[0], ph.influencesArrow[1]);
+      v.oldInformsAlpha = 1 - ramp(eventT, ph.oldInformsFade[0], ph.oldInformsFade[1]);
+      v.oldInfluencesAlpha = 1 - ramp(eventT, ph.oldInfluencesFade[0], ph.oldInfluencesFade[1]);
+      const flashT = ramp(eventT, ph.influencesArrow[1] - 100, ph.influencesArrow[1] + 400);
+      v.landingFlash = flashT > 0 && flashT < 1
+        ? { r: 12, opacity: Math.max(0, 0.7 * (1 - flashT)) }
+        : null;
+    }
   }
 
-  const informsT = activeEvent && showEventVisuals
-    ? ramp(eventT, PHASE.informsArrow[0], PHASE.informsArrow[1])
-    : 0;
+  // Persistent old arrow alphas at calm (no active event)
+  // For A and C: old informs anchor = lastEvent.newExpected (frozen)
+  // For B and idle: old informs anchor = lastEvent.newExpected too
+  const oldInformsAnchor = isDragging
+    ? expectedNorm
+    : lastEvent
+      ? lastEvent.newExpected
+      : null;
+  const oldInformsAlphaResolved = isDragging
+    ? 1
+    : activeEvent && lastEvent && (activeEvent.type === "A" || activeEvent.type === "C")
+      ? v.oldInformsAlpha
+      : lastEvent
+        ? 1
+        : 0;
 
-  // ─── INFLUENCES arrow (INK) ───
-  // Old influences arrow persists across the calm gap — only fades after the
-  // new one has started drawing.
-  let oldInfluencesAnchor: number | null = null;
-  let oldInfluencesAlpha = 0;
-  if (activeEvent && lastEvent) {
-    oldInfluencesAnchor = lastEvent.newActual;
-    oldInfluencesAlpha = 1 - ramp(eventT, PHASE.oldInfluencesFade[0], PHASE.oldInfluencesFade[1]);
-  } else if (lastEvent) {
-    oldInfluencesAnchor = lastEvent.newActual;
-    oldInfluencesAlpha = 1;
+  // Old influences arrow:
+  // - For C: anchored at lastEvent.newActual, fades per phase
+  // - For B: arrow's endpoint follows live actual (no old arrow)
+  // - For A: anchored at lastEvent.newActual (frozen)
+  // - Idle: anchored at lastEvent.newActual
+  let inkArrowAnchor: number | null = null;
+  let inkArrowAlpha = 0;
+  if (lastEvent) {
+    if (activeEvent && activeEvent.type === "C") {
+      inkArrowAnchor = lastEvent.newActual;
+      inkArrowAlpha = v.oldInfluencesAlpha;
+    } else if (activeEvent && activeEvent.type === "B") {
+      // The "old" ink arrow's endpoint follows actual as it eases — not frozen.
+      inkArrowAnchor = scheduledActual;
+      inkArrowAlpha = 1;
+    } else {
+      // A or idle: frozen at lastEvent.newActual
+      inkArrowAnchor = lastEvent.newActual;
+      inkArrowAlpha = 1;
+    }
   }
 
-  const inflT = activeEvent && showEventVisuals
-    ? ramp(eventT, PHASE.influencesArrow[0], PHASE.influencesArrow[1])
-    : 0;
+  // Banner state
+  const bannerEvent = activeEvent ?? lastEvent;
+  const bannerText = bannerEvent ? bannerEvent.message : "";
+  // Crossfade: when an event begins, briefly fade out (we still show last event's text)
+  // then fade in with new text.
+  let bannerAlpha = 1;
+  let bannerDisplayText = bannerText;
+  if (activeEvent && lastEvent && eventT < 700) {
+    if (eventT < 300) {
+      bannerAlpha = 1 - eventT / 300;
+      bannerDisplayText = lastEvent.message;
+    } else {
+      bannerAlpha = (eventT - 300) / 400;
+      bannerDisplayText = activeEvent.message;
+    }
+  }
 
-  // Landing flash
-  const landingFlashT = activeEvent && showEventVisuals
-    ? ramp(eventT, PHASE.influencesArrow[1] - 100, PHASE.influencesArrow[1] + 400)
-    : 0;
-  const landingFlash = activeEvent
-    && showEventVisuals
-    && activeEvent.changesActual
-    && landingFlashT > 0
-    && landingFlashT < 1
-    ? { r: 12, opacity: Math.max(0, 0.7 * (1 - landingFlashT)) }
-    : null;
+  // Pre-split single line geometry — visible during intro before split completes
+  const introActualY = lerp(SPLIT_MID_Y, ACTUAL_Y, ease(introSplit));
+  const introExpectedY = lerp(SPLIT_MID_Y, EXPECTED_Y, ease(introSplit));
 
   return (
-    <figure className="hl-figure">
+    <figure className="hl-figure" ref={figureRef as React.RefObject<HTMLElement>}>
       <div className="hl-canvas">
         <svg
           ref={svgRef}
@@ -367,75 +602,120 @@ export default function HorizonLoop() {
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
           preserveAspectRatio="xMidYMid meet"
           role="img"
-          aria-label="Decision strategy on the left, time horizon on the right with two parallel lines for actual and expected. Drag the expected pin to move it. New events fire periodically, sending arrows between them."
+          aria-label="Decision strategy on the left, time horizon on the right with two parallel lines for actual and expected. Events fire on a loop with a banner explaining each one. Drag the expected pin."
         >
-          {/* No marker defs — arrowheads are drawn manually as rotated
-              triangles so the tip points exactly at the target dot, not
-              wherever the path's tangent happens to face. */}
-
-          {/* Headers — DECISION STRATEGY left, TIME HORIZON right (mirrored) */}
-          <text x={STRAT_HEADER_X} y={HEADER_Y} className="hl-strategy-name">
+          {/* Headers */}
+          <text
+            x={STRAT_HEADER_X}
+            y={HEADER_Y}
+            className="hl-strategy-name"
+            opacity={introStratBlock}
+          >
             DECISION STRATEGY
           </text>
-          <text x={LINE_X2} y={HEADER_Y} textAnchor="end" className="hl-strategy-name">
+          <text
+            x={LINE_X2}
+            y={HEADER_Y}
+            textAnchor="end"
+            className="hl-strategy-name"
+            opacity={introTHHeader}
+          >
             TIME HORIZON
           </text>
 
-          {/* Two parallel time lines */}
-          <line x1={LINE_X1} y1={ACTUAL_Y} x2={LINE_X2} y2={ACTUAL_Y} className="hl-line-actual" />
-          <line x1={LINE_X1} y1={EXPECTED_Y} x2={LINE_X2} y2={EXPECTED_Y} className="hl-line-expected" />
-          <text x={LINE_X2 + 10} y={ACTUAL_Y + 4} className="hl-line-label hl-line-label--strong">
+          {/* Two parallel time lines (animated apart from a single line) */}
+          <line
+            x1={LINE_X1}
+            y1={introActualY}
+            x2={LINE_X2}
+            y2={introActualY}
+            className="hl-line-actual"
+            opacity={introSingleLine}
+          />
+          <line
+            x1={LINE_X1}
+            y1={introExpectedY}
+            x2={LINE_X2}
+            y2={introExpectedY}
+            className="hl-line-expected"
+            opacity={introSplit}
+          />
+          <text
+            x={LINE_X2 + 10}
+            y={ACTUAL_Y + 4}
+            className="hl-line-label hl-line-label--strong"
+            opacity={introLineLabels}
+          >
             ACTUAL
           </text>
-          <text x={LINE_X2 + 10} y={EXPECTED_Y + 4} className="hl-line-label">
+          <text
+            x={LINE_X2 + 10}
+            y={EXPECTED_Y + 4}
+            className="hl-line-label"
+            opacity={introLineLabels}
+          >
             EXPECTED
           </text>
 
           {/* Strategy anchor */}
-          <circle
-            cx={STRAT_NODE_X}
-            cy={STRAT_NODE_Y}
-            r={STRAT_RING_R}
-            fill="#ffffff"
-            stroke="#0a0a0a"
-            strokeWidth="1.5"
-          />
-          <circle cx={STRAT_NODE_X} cy={STRAT_NODE_Y} r={STRAT_DOT_R} fill="#0a0a0a" />
-          {stratPulse && (
+          <g opacity={introStratBlock}>
             <circle
               cx={STRAT_NODE_X}
               cy={STRAT_NODE_Y}
-              r={stratPulse.r}
+              r={STRAT_RING_R}
+              fill="#ffffff"
+              stroke="#0a0a0a"
+              strokeWidth="1.5"
+            />
+            <circle cx={STRAT_NODE_X} cy={STRAT_NODE_Y} r={STRAT_DOT_R} fill="#0a0a0a" />
+          </g>
+          {v.stratPulse && (
+            <circle
+              cx={STRAT_NODE_X}
+              cy={STRAT_NODE_Y}
+              r={v.stratPulse.r}
               fill="none"
               stroke="#1e3a8a"
               strokeWidth="1.2"
-              opacity={stratPulse.opacity}
+              opacity={v.stratPulse.opacity}
             />
           )}
 
-          {/* Concentric waves at the new Expected dot */}
-          {waves.map((w, i) =>
-            w == null ? null : (
-              <circle
-                key={`wave-${activeIdx}-${i}`}
-                cx={newExpectedX}
-                cy={EXPECTED_Y}
-                r={w.r}
-                fill="none"
-                stroke="#1e3a8a"
-                strokeWidth="1.2"
-                opacity={w.opacity}
-              />
-            ),
-          )}
+          {/* Concentric BLUE waves at the new Expected dot (Type A and C) */}
+          {v.expectedWaves.map((w, i) => (
+            <circle
+              key={`ewave-${activeIdx}-${i}`}
+              cx={newExpectedX}
+              cy={EXPECTED_Y}
+              r={w.r}
+              fill="none"
+              stroke="#1e3a8a"
+              strokeWidth="1.2"
+              opacity={w.opacity}
+            />
+          ))}
 
-          {/* OLD informs arrow — persistent */}
-          {oldInformsAnchor !== null && oldInformsAlpha > 0 && (
+          {/* Concentric INK waves at the new Actual dot (Type B) */}
+          {v.actualWaves.map((w, i) => (
+            <circle
+              key={`awave-${activeIdx}-${i}`}
+              cx={newActualX}
+              cy={ACTUAL_Y}
+              r={w.r}
+              fill="none"
+              stroke="#0a0a0a"
+              strokeWidth="1.2"
+              opacity={w.opacity}
+            />
+          ))}
+
+          {/* OLD informs arrow — persistent (always present once an event has happened) */}
+          {introDone && oldInformsAnchor !== null && oldInformsAlphaResolved > 0 && (
             <>
               <path
                 d={buildInformsPath(oldInformsAnchor, 1)}
                 className="hl-arc-informs-blue"
-                opacity={oldInformsAlpha}
+                opacity={oldInformsAlphaResolved}
               />
               <ArrowTip
                 x={INFORMS_END_X}
@@ -443,19 +723,19 @@ export default function HorizonLoop() {
                 targetX={STRAT_NODE_X}
                 targetY={STRAT_NODE_Y}
                 color="#1e3a8a"
-                opacity={oldInformsAlpha}
+                opacity={oldInformsAlphaResolved}
               />
             </>
           )}
 
-          {/* NEW informs arrow */}
-          {informsT > 0 && (
+          {/* NEW informs arrow (Type A or C) */}
+          {v.informsT > 0 && activeEvent && (
             <>
               <path
-                d={buildInformsPath(activeEvent!.newExpected, informsT)}
+                d={buildInformsPath(activeEvent.newExpected, v.informsT)}
                 className="hl-arc-informs-blue"
               />
-              {informsT >= 0.99 && (
+              {v.informsT >= 0.99 && (
                 <ArrowTip
                   x={INFORMS_END_X}
                   y={INFORMS_END_Y}
@@ -467,37 +747,37 @@ export default function HorizonLoop() {
             </>
           )}
 
-          {/* OLD influences arrow — persistent until new one draws */}
-          {oldInfluencesAnchor !== null && oldInfluencesAlpha > 0 && (
+          {/* Persistent ink influences arrow */}
+          {introDone && inkArrowAnchor !== null && inkArrowAlpha > 0 && (
             <>
               <path
-                d={buildInfluencesPath(oldInfluencesAnchor, 1)}
+                d={buildInfluencesPath(inkArrowAnchor, 1)}
                 className="hl-arc-influences-ink"
-                opacity={oldInfluencesAlpha}
+                opacity={inkArrowAlpha}
               />
               <ArrowTip
-                x={LINE_X1 + oldInfluencesAnchor * LINE_W}
+                x={LINE_X1 + inkArrowAnchor * LINE_W}
                 y={ACTUAL_Y - INFL_END_DY}
-                targetX={LINE_X1 + oldInfluencesAnchor * LINE_W}
+                targetX={LINE_X1 + inkArrowAnchor * LINE_W}
                 targetY={ACTUAL_Y}
                 color="#0a0a0a"
-                opacity={oldInfluencesAlpha}
+                opacity={inkArrowAlpha}
               />
             </>
           )}
 
-          {/* NEW influences arrow */}
-          {inflT > 0 && (
+          {/* NEW influences arrow (Type C only) */}
+          {v.influencesT > 0 && activeEvent && (
             <>
               <path
-                d={buildInfluencesPath(activeEvent!.newActual, inflT)}
+                d={buildInfluencesPath(activeEvent.newActual, v.influencesT)}
                 className="hl-arc-influences-ink"
               />
-              {inflT >= 0.99 && (
+              {v.influencesT >= 0.99 && (
                 <ArrowTip
-                  x={LINE_X1 + activeEvent!.newActual * LINE_W}
+                  x={LINE_X1 + activeEvent.newActual * LINE_W}
                   y={ACTUAL_Y - INFL_END_DY}
-                  targetX={LINE_X1 + activeEvent!.newActual * LINE_W}
+                  targetX={LINE_X1 + activeEvent.newActual * LINE_W}
                   targetY={ACTUAL_Y}
                   color="#0a0a0a"
                 />
@@ -506,15 +786,15 @@ export default function HorizonLoop() {
           )}
 
           {/* Landing flash on Actual marker */}
-          {landingFlash && (
+          {v.landingFlash && (
             <circle
-              cx={targetActualX}
+              cx={newActualX}
               cy={ACTUAL_Y}
-              r={landingFlash.r}
+              r={v.landingFlash.r}
               fill="none"
               stroke="#0a0a0a"
               strokeWidth="1.2"
-              opacity={landingFlash.opacity}
+              opacity={v.landingFlash.opacity}
             />
           )}
 
@@ -524,6 +804,7 @@ export default function HorizonLoop() {
               "hl-expected-marker" +
               (hovered || isDragging ? " hl-expected-marker--active" : "")
             }
+            opacity={introSplit}
           >
             <circle
               cx={expectedX}
@@ -561,25 +842,36 @@ export default function HorizonLoop() {
           </g>
 
           {/* Actual pin */}
-          <line
-            x1={actualX}
-            y1={ACTUAL_Y - 12}
-            x2={actualX}
-            y2={ACTUAL_Y + 12}
-            className="hl-pin-tick-actual"
-          />
-          <circle cx={actualX} cy={ACTUAL_Y} r={6} className="hl-pin-dot-actual" />
+          <g opacity={introSplit}>
+            <line
+              x1={actualX}
+              y1={ACTUAL_Y - 12}
+              x2={actualX}
+              y2={ACTUAL_Y + 12}
+              className="hl-pin-tick-actual"
+            />
+            <circle cx={actualX} cy={ACTUAL_Y} r={6} className="hl-pin-dot-actual" />
+          </g>
+
+          {/* Banner */}
+          {bannerDisplayText && (
+            <text
+              x={VIEW_W / 2}
+              y={BANNER_Y}
+              textAnchor="middle"
+              className="hl-banner"
+              opacity={bannerAlpha}
+            >
+              {bannerDisplayText}
+            </text>
+          )}
         </svg>
       </div>
     </figure>
   );
 }
 
-/**
- * Manual arrowhead — a small triangle rotated to point exactly at a target
- * dot, regardless of the curve's tangent at the path endpoint. The triangle's
- * tip is `ARROW_LEN` away from (x, y) along the direction of (target - point).
- */
+/** Manual arrowhead — small triangle rotated to point at a target dot. */
 function ArrowTip({
   x,
   y,

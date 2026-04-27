@@ -1663,6 +1663,21 @@ footer.site {
   line-height: 1.4;
 }
 
+/* Email link inside the byline tagline: keep the tagline's ink tone (not
+   the default blue) and underline only, with a hairline rule and a hover
+   pop so it still reads as interactive. */
+.post-author__tagline a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--ink-faint);
+  transition: color 180ms ease, text-decoration-color 180ms ease;
+}
+.post-author__tagline a:hover {
+  color: var(--ink);
+  text-decoration-color: currentColor;
+}
+
 .post-author__link {
   font-size: 12px;
   color: var(--ink-soft);

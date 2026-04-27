@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllPosts, getPost } from "@/lib/posts";
 import FuturesSimulation from "@/components/FuturesSimulation";
@@ -45,6 +46,24 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       <div className="prose-content">
         <MDXRemote source={post.content} components={mdxComponents} />
       </div>
+      <footer className="post-author">
+        <img
+          src="/profile-picture-julius/zugeschnittenes_kreis_bild.png"
+          alt="Portrait of Julius"
+          width={810}
+          height={810}
+          className="post-author__avatar"
+        />
+        <div className="post-author__meta">
+          <p className="post-author__name">Julius</p>
+          <p className="post-author__tagline">
+            Writes about decision making under deep uncertainty.
+          </p>
+          <Link href="/about" className="post-author__link">
+            About <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+      </footer>
     </article>
   );
 }

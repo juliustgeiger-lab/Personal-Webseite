@@ -6,6 +6,13 @@ export default function About() {
   return (
     <main className="page-wrap space-y-8">
       <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">About</h1>
+      <img
+        src="/profile-picture-julius/zugeschnittenes_kreis_bild.png"
+        alt="Portrait of Julius"
+        width={810}
+        height={810}
+        className="about-portrait"
+      />
       <div className="space-y-5 text-zinc-700 dark:text-zinc-300 leading-relaxed">
         <p>
           Most decisions get made as if the future could be predicted. I find that assumption

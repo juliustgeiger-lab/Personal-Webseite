@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, JetBrains_Mono, Sacramento, Instrument_Serif } from "next/font/google";
 import Link from "next/link";
-import Image from "next/image";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,14 +45,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <nav className="top">
           <Link href="/" className="brand">
-            <Image
-              src="/logo/logo-black.png"
-              alt="Julius logo"
-              className="mark"
-              width={1500}
-              height={1500}
-              priority
-            />
+            <span className="dot">※</span>
             <span>Julius</span>
           </Link>
           <div className="links">

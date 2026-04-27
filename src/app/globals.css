@@ -1282,6 +1282,46 @@ footer.site {
   scroll-margin-top: 100px;
 }
 
+/* References section — drops to a subordinate visual layer so the eye reads
+   it as apparatus, not body. Each <p> that contains a `<a id="ref-…">` anchor
+   is the giveaway, so we use :has() to target the references without needing
+   a wrapper div in the MDX. The heading right above gets the same treatment.
+   Modern browsers (Chrome 105+, Safari 15.4+, Firefox 121+) support :has();
+   older browsers fall back to the default prose styling. */
+.prose-content h2:has(+ p > a[id^="ref-"]) {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-top: 3.5em;
+  padding-top: 1.5em;
+  border-top: 1px solid var(--rule);
+}
+
+.prose-content p:has(> a[id^="ref-"]) {
+  font-size: 0.85em;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+/* Links inside references stay visible but hold the same soft tint, with a
+   hairline underline so the citation hierarchy still reads. */
+.prose-content p:has(> a[id^="ref-"]) a {
+  color: var(--ink-soft);
+  text-decoration-color: var(--ink-faint);
+}
+.prose-content p:has(> a[id^="ref-"]) a:hover {
+  color: var(--ink);
+}
+
+/* Italic book/journal titles within the references stay subordinate too. */
+.prose-content p:has(> a[id^="ref-"]) em {
+  color: var(--ink-soft);
+}
+
 @media (max-width: 900px) {
   main.home { padding: 120px 20px 60px; }
   nav.top { top: 10px; width: calc(100% - 20px); }

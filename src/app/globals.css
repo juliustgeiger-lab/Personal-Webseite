@@ -1560,34 +1560,21 @@ footer.site {
   overflow: visible;
 }
 
-/* Strategy node — dot with breathing aura. Echoes PresentSection. */
-.hl-strategy-dot {
+/* Strategy block — typographic node with vertical accent rail. */
+.hl-strategy-name {
+  font-family: var(--font-geist-sans), "Geist", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   fill: var(--ink);
 }
-.hl-strategy-aura {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 1;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-.hl-strategy-aura--inner { opacity: 0.20; animation: hl-aura-breathe 4.4s ease-in-out infinite; }
-.hl-strategy-aura--outer { opacity: 0.10; animation: hl-aura-breathe 6.1s ease-in-out -1.4s infinite; }
 
-@keyframes hl-aura-breathe {
-  0%, 100% { transform: scale(1);    }
-  50%      { transform: scale(1.10); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hl-strategy-aura { animation: none; }
-}
-
-.hl-strategy-label {
+.hl-group-label {
   font-family: var(--font-jetbrains-mono), monospace;
   font-size: 10px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  fill: var(--ink-soft);
+  fill: var(--ink-faint);
   font-weight: 500;
 }
 
@@ -1637,9 +1624,46 @@ footer.site {
 .hl-arc-influences {
   fill: none;
   stroke: #1e3a8a;
-  stroke-width: 1.2;
+  stroke-width: 2;
   stroke-linecap: round;
 }
+
+.hl-arc-informs-solid {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* v9 — thicker lines, smaller manual arrowheads */
+.hl-arc-informs-blue {
+  fill: none;
+  stroke: #1e3a8a;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.hl-arc-influences-ink {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+/* Expected pin drag affordance */
+.hl-expected-marker { pointer-events: none; }
+.hl-drag-handle {
+  pointer-events: all;
+  cursor: grab;
+  touch-action: none;
+}
+.hl-expected-marker--active .hl-drag-handle { cursor: grabbing; }
+.hl-drag-ring {
+  fill: #1e3a8a;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.hl-expected-marker--active .hl-drag-ring { opacity: 0.10; }
 .hl-arc-informs {
   fill: none;
   stroke: var(--ink);

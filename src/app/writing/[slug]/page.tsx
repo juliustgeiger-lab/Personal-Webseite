@@ -5,6 +5,8 @@ import { getAllPosts, getPost } from "@/lib/posts";
 import FuturesSimulation from "@/components/FuturesSimulation";
 import HorizonDiagram from "@/components/figures/HorizonDiagram";
 import HorizonLoop from "@/components/figures/HorizonLoop";
+import HorizonLoopStory from "@/components/figures/HorizonLoopStory";
+import BarbellDiagnostic from "@/components/figures/BarbellDiagnostic";
 
 // Components MDX posts can use directly (e.g. <FuturesSimulation />).
 // Register a new in-essay figure here, then drop the tag into the .mdx file.
@@ -12,7 +14,9 @@ import HorizonLoop from "@/components/figures/HorizonLoop";
 const baseMdxComponents = {
   FuturesSimulation,
   HorizonDiagram,
-  HorizonLoop,
+  HorizonLoop,         // Fig 2 — concept-only loop
+  HorizonLoopStory,    // Fig 3 — biographic life arc, place when ready
+  BarbellDiagnostic,
 };
 
 // Lead-figure registry — components that can sit ABOVE the article header

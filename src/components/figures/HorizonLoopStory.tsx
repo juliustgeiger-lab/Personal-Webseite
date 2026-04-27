@@ -49,25 +49,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
  * prefers-reduced-motion: settles to a representative still state.
  */
 
-// Concept-only Fig 2 — layout balanced. The strategy block is shifted right
-// and the time-horizon area shortened so the bowtie of arcs sits centred in
-// the viewBox rather than visually weighted to the right.
 const VIEW_W = 760;
-const VIEW_H = 240;
+const VIEW_H = 240; // taller than v9 to fit the banner row
 
+// Headers
 const HEADER_Y = 72;
-const STRAT_HEADER_X = 60;
+const STRAT_HEADER_X = 40;
 
 // Strategy block
-const STRAT_NODE_X = 200;
+const STRAT_NODE_X = 140;
 const STRAT_NODE_Y = 134;
 const STRAT_RING_R = 11;
 const STRAT_DOT_R = 4;
 
-// Two parallel horizon lines — shorter than the biographic version so the
-// figure feels centred.
-const LINE_X1 = 340;
-const LINE_X2 = 700;
+// Two parallel horizon lines
+const LINE_X1 = 300;
+const LINE_X2 = 720;
 const LINE_W = LINE_X2 - LINE_X1;
 const ACTUAL_Y = 120;
 const EXPECTED_Y = 148;
@@ -136,40 +133,76 @@ const SCHEDULE_LEN = 100;
 // Position values are tuned so consecutive markers along the same axis are
 // always visually distinct (deltas ≥ 0.07).
 type LifeEntry = {
-  age?: number;
+  age: number;
   type: "A" | "B" | "C";
   newExpected?: number;
   newActual?: number;
   message: string;
 };
 
-// Concept-only loop — Fig 2 in the essay.
+// One ordinary life. The point is not drama — most events are everyday
+// choices, routine appointments, or pieces of information. The figure
+// rewards a reader who notices that small things compound, that the
+// strategy often doesn't track lifestyle, and that diagnoses are usually
+// information about a condition that was already there.
 //
-// Demonstrates each event type in turn so a reader learns the visual
-// vocabulary: information flows in (A), lifestyle drifts actual without
-// the strategy noticing (B → divergence → ink arrow goes dotted),
-// interventions update both (C → ink arrow snaps back to solid).
-//
-// No ages, no biographic specifics. The biographic version lives in
-// HorizonLoopStory.tsx for use in a separate figure later.
+// Type semantics (sharpened):
+//   A — information reaches strategy. Your biology doesn't change.
+//       (checkups, reading a book, a friend's news, a bloodwork finding
+//       that surfaces a pre-existing condition.)
+//   B — your lifestyle changes your biology, but the formal plan doesn't
+//       integrate it. (started running, smoking at parties, got a dog.)
+//   C — a deliberate intervention that actually changes biology AND
+//       updates the plan. (statin therapy, CPAP, hip replacement.)
 const LIFE_STORY: LifeEntry[] = [
-  // 1. Type A — pure information. Strategy moves; actual doesn't.
-  { type: "A", newExpected: 0.62,
-    message: "New information. Strategy informed. Actual unchanged." },
-  // 2. Type B (long) — lifestyle extends actual. Strategy never finds out
-  // → ink arrow goes dotted as actual diverges from the strategic target.
-  { type: "B", newActual: 0.78,
-    message: "Lifestyle change. Actual extends. Strategy unaware." },
-  // 3. Type C (long) — intervention. Strategy catches up to a new target,
-  // ink arrow snaps back to solid.
-  { type: "C", newExpected: 0.78, newActual: 0.85,
-    message: "Intervention begins. Strategy informed. Actual extends." },
-  // 4. Type B (short) — lifestyle drift the other way. Divergence again.
-  { type: "B", newActual: 0.50,
-    message: "Habit drift. Actual shortens. Strategy unaware." },
-  // 5. Type C (short) — strategy acknowledges the shorter horizon.
-  { type: "C", newExpected: 0.50, newActual: 0.45,
-    message: "Setback acknowledged. Strategy informed. Actual shortens." },
+  // Young adult — small choices
+  { age: 25, type: "A", newExpected: 0.85,
+    message: "Age 25 · Annual checkup. Strategy informed. Actual unchanged." },
+  { age: 27, type: "B", newActual: 0.30,
+    message: "Age 27 · First cigarettes at parties. Actual shortens. Strategy unaware." },
+  { age: 30, type: "B", newActual: 0.55,
+    message: "Age 30 · Running on weekends. Actual extends. Strategy unaware." },
+  { age: 33, type: "A", newExpected: 0.78,
+    message: "Age 33 · Reads 'Outlive' on the plane. Strategy informed. Actual unchanged." },
+  { age: 35, type: "B", newActual: 0.65,
+    message: "Age 35 · Switched to a Mediterranean diet. Actual extends. Strategy unaware." },
+  { age: 38, type: "A", newExpected: 0.72,
+    message: "Age 38 · New sleep study published. Strategy informed. Actual unchanged." },
+  { age: 40, type: "B", newActual: 0.74,
+    message: "Age 40 · Stopped weekday drinking. Actual extends. Strategy unaware." },
+  // 40s — first signal, more lifestyle
+  { age: 43, type: "A", newExpected: 0.65,
+    message: "Age 43 · Bloodwork: cholesterol up. Strategy informed. Actual unchanged." },
+  { age: 45, type: "B", newActual: 0.82,
+    message: "Age 45 · Cycling to work. Actual extends. Strategy unaware." },
+  { age: 48, type: "B", newActual: 0.65,
+    message: "Age 48 · Skipped the gym for a year. Actual shortens. Strategy unaware." },
+  // 50s — first interventions
+  { age: 50, type: "C", newExpected: 0.72, newActual: 0.80,
+    message: "Age 50 · Started a statin. Strategy informed. Actual extends." },
+  { age: 53, type: "B", newActual: 0.86,
+    message: "Age 53 · Joined a hiking club. Actual extends. Strategy unaware." },
+  { age: 55, type: "C", newExpected: 0.78, newActual: 0.92,
+    message: "Age 55 · CPAP for sleep apnea. Strategy informed. Actual extends." },
+  { age: 58, type: "A", newExpected: 0.70,
+    message: "Age 58 · Friend's heart attack. Strategy informed. Actual unchanged." },
+  // 60s — settling
+  { age: 60, type: "A", newExpected: 0.62,
+    message: "Age 60 · Retirement begins. Strategy informed. Actual unchanged." },
+  { age: 62, type: "B", newActual: 0.85,
+    message: "Age 62 · Got a dog. Actual extends. Strategy unaware." },
+  { age: 65, type: "A", newExpected: 0.55,
+    message: "Age 65 · Annual physical, all clear. Strategy informed. Actual unchanged." },
+  // 60s late — intervention
+  { age: 68, type: "C", newExpected: 0.45, newActual: 0.65,
+    message: "Age 68 · Hip replacement. Strategy informed. Actual shortens." },
+  { age: 71, type: "B", newActual: 0.78,
+    message: "Age 71 · Took up gardening. Actual extends. Strategy unaware." },
+  // 70s — gentle
+  { age: 73, type: "A", newExpected: 0.38,
+    message: "Age 73 · Mild fall, recovers. Strategy informed. Actual unchanged." },
+  { age: 75, type: "A", newExpected: 0.32,
+    message: "Age 75 · Annual physical, still fine. Strategy informed. Actual unchanged." },
 ];
 
 // Pacing: bigger events get more breathing room.
@@ -248,9 +281,7 @@ function partialQuadratic(
 }
 
 const INFL_END_DY = 18;
-// Informs arrow lands just below-right of the strategy anchor — moved with
-// STRAT_NODE_X so the geometry still clears the ring with a visible gap.
-const INFORMS_END_X = STRAT_NODE_X + 18;
+const INFORMS_END_X = 158;
 const INFORMS_END_Y = 150;
 const ARROW_LEN = 6;
 const ARROW_HALF = 3;

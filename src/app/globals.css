@@ -1283,12 +1283,20 @@ footer.site {
 }
 
 /* References section — drops to a subordinate visual layer so the eye reads
-   it as apparatus, not body. Each <p> that contains a `<a id="ref-…">` anchor
-   is the giveaway, so we use :has() to target the references without needing
-   a wrapper div in the MDX. The heading right above gets the same treatment.
-   Modern browsers (Chrome 105+, Safari 15.4+, Firefox 121+) support :has();
-   older browsers fall back to the default prose styling. */
-.prose-content h2:has(+ p > a[id^="ref-"]) {
+   it as apparatus, not body. MDX renders the anchors as siblings of the
+   reference paragraphs, not children:
+       <h2>References</h2>
+       <a id="ref-foo"></a>
+       <p>Foo et al…</p>
+       <a id="ref-bar"></a>
+       <p>Bar…</p>
+   So we target via adjacent-sibling selectors: h2 whose next sibling is a
+   `<a id="ref-…">` becomes the section heading; every `<a id="ref-…"> + p`
+   becomes a reference paragraph. No :has() on the paragraphs (so we get
+   the reference styling on every browser); :has() is only used for the
+   heading detection (Chrome 105+ / Safari 15.4+ / Firefox 121+ — older
+   browsers fall back to default h2 styling, harmless). */
+.prose-content h2:has(+ a[id^="ref-"]) {
   font-size: 0.85rem;
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -1299,7 +1307,7 @@ footer.site {
   border-top: 1px solid var(--rule);
 }
 
-.prose-content p:has(> a[id^="ref-"]) {
+.prose-content a[id^="ref-"] + p {
   font-size: 0.85em;
   line-height: 1.55;
   color: var(--ink-soft);
@@ -1307,18 +1315,18 @@ footer.site {
   margin-bottom: 0.5em;
 }
 
-/* Links inside references stay visible but hold the same soft tint, with a
-   hairline underline so the citation hierarchy still reads. */
-.prose-content p:has(> a[id^="ref-"]) a {
+/* Links inside reference paragraphs stay visible but hold the same soft
+   tint, with a hairline underline so the citation hierarchy still reads. */
+.prose-content a[id^="ref-"] + p a {
   color: var(--ink-soft);
   text-decoration-color: var(--ink-faint);
 }
-.prose-content p:has(> a[id^="ref-"]) a:hover {
+.prose-content a[id^="ref-"] + p a:hover {
   color: var(--ink);
 }
 
 /* Italic book/journal titles within the references stay subordinate too. */
-.prose-content p:has(> a[id^="ref-"]) em {
+.prose-content a[id^="ref-"] + p em {
   color: var(--ink-soft);
 }
 

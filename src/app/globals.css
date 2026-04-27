@@ -1419,7 +1419,20 @@ footer.site {
 }
 .ef-wrap--dark .ef-caption { color: #a3a3a3; }
 
-/* ----- Horizon diagram (body figure) ----- */
+/* ----- Horizon diagram (body figure) -----
+   Bare figure: no border, no eyebrow label, generous vertical breathing
+   room so it reads as part of the prose flow rather than a sidebar object. */
+.hd-figure {
+  margin: 32px auto 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
 .hd-canvas {
   width: 100%;
   cursor: default;
@@ -1430,6 +1443,16 @@ footer.site {
   height: auto;
   display: block;
   overflow: visible;
+}
+
+/* Smaller, narrower caption that anchors near "NOW" in the SVG above. */
+.hd-caption {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-align: center;
+  max-width: 44ch;
+  margin: 0 auto;
 }
 
 .hd-axis-label {

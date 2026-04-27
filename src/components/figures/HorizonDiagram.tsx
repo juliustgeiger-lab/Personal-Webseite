@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import EssayFigure from "./EssayFigure";
 
 /**
  * HorizonDiagram — outcome view.
@@ -139,10 +138,7 @@ export default function HorizonDiagram() {
   const aActive = hovered === "a" || dragging === "a";
 
   return (
-    <EssayFigure
-      label="§ Fig 1 — Horizon: expected and actual"
-      caption="The strategy lives between now and the horizon you expect. The hatch is the slice that got mismapped — strategy calibrated to a timeframe that never arrived, or a timeframe you never planned for."
-    >
+    <figure className="hd-figure">
       <div className="hd-canvas">
         <svg
           ref={svgRef}
@@ -325,6 +321,10 @@ export default function HorizonDiagram() {
           </g>
         </svg>
       </div>
-    </EssayFigure>
+      <figcaption className="hd-caption">
+        From now, your strategy runs to the horizon you expected. The hatch
+        is where expected and actual diverge.
+      </figcaption>
+    </figure>
   );
 }

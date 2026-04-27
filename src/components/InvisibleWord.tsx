@@ -25,7 +25,7 @@ const AUTO_PHASES: Record<
 > = {
   invisible: { rest: 2000, reveal: 2400 },
   uncertain: { rest: 1700, reveal: 4500 },
-  unwritten: { rest: 700, reveal: 5600 },
+  unwritten: { rest: 700, reveal: 5200 },
 };
 
 // Map progress through the invisible reveal (0..1) to a (--mx, --my) pair.

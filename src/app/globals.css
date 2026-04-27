@@ -454,14 +454,16 @@ main.home {
 }
 .invisible-word--handwrite:hover .uw-svg,
 .invisible-word--handwrite.force-reveal .uw-svg {
-  /* Three beats stacked on the same clip-path property:
-       0–3500ms:  uw-wipe — write left→right (clip from right shrinks to 0)
-       3500–4800ms: implicit hold (uw-wipe forwards keeps the final state)
-       4800–5600ms: uw-clear — fade left→right (clip from left grows to 100%)
-     Mirroring the writing direction on the way out reads as the ink
-     'lifting' the same way it was laid down. */
+  /* Three beats on clip-path:
+       0–3500ms:  uw-wipe  — write   left→right (clip from right shrinks)
+       3500–4400ms: implicit hold    (forwards keeps wipe's final state)
+       4400–5200ms: uw-clear — clear right→left (clip from right grows)
+     Clear sweeps in the opposite direction to the write — right side
+     dissolves first, the last ink lingers on the left where the pen
+     started. Easing is an asymmetric easeIn (slow start, faster off)
+     so it reads less mechanical than the matching easeInOut on the way in. */
   animation: uw-wipe 3500ms cubic-bezier(0.65, 0, 0.35, 1) forwards,
-             uw-clear 800ms cubic-bezier(0.65, 0, 0.35, 1) 4800ms forwards;
+             uw-clear 800ms cubic-bezier(0.55, 0.085, 0.68, 0.53) 4400ms forwards;
 }
 
 @keyframes uw-wipe {
@@ -471,7 +473,7 @@ main.home {
 
 @keyframes uw-clear {
   from { clip-path: inset(0 0 0 0); }
-  to   { clip-path: inset(0 0 0 100%); }
+  to   { clip-path: inset(0 100% 0 0); }
 }
 
 @media (prefers-reduced-motion: reduce) {

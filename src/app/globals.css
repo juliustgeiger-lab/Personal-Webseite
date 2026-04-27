@@ -1338,16 +1338,17 @@ footer.site {
 .prose-content > p:first-of-type::first-letter {
   float: left;
   font-family: var(--font-instrument), Georgia, serif;
-  font-weight: 400;
+  /* Instrument Serif only ships 400, but the browser will synthesise bold
+     when we ask for 700. We then add a 2.5px text-stroke on top so the cap
+     reads as obviously heavier than the body, even at the ~86px size where
+     a 1px stroke would be invisible. paint-order: stroke fill paints the
+     stroke behind the fill so the inner curves stay clean. */
+  font-weight: 700;
   font-size: 5.4em;
   line-height: 0.82;
   margin: 0.05em 0.10em -0.10em 0;
   color: var(--ink);
-  /* Instrument Serif only ships 400, so we can't bump font-weight. Adding a
-     stroke in the same colour as the fill thickens every contour uniformly,
-     keeping the letterform but giving it weight. paint-order ensures the
-     stroke renders behind the fill so it doesn't muddy the inner curves. */
-  -webkit-text-stroke: 1.5px var(--ink);
+  -webkit-text-stroke: 2.5px var(--ink);
   paint-order: stroke fill;
 }
 

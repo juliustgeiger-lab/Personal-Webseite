@@ -1424,7 +1424,7 @@ footer.site {
    the inline <PostDate /> sits close under the diagram instead of floating
    in white space; the date itself adds the gap to the drop-capped opener. */
 .hd-figure {
-  margin: 4px auto 8px;
+  margin: 4px auto 32px;
   padding: 0;
   border: 0;
   background: none;

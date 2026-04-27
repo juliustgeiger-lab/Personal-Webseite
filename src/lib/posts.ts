@@ -13,6 +13,11 @@ export type PostMeta = {
   /** When true, the post page hides the header timestamp; the .mdx is then
    *  responsible for rendering <PostDate /> wherever it wants the date. */
   inlineDate?: boolean;
+  /** Name of a registered figure component to render above the article
+   *  header (above h1 + date). Looked up in LEAD_FIGURE_REGISTRY in
+   *  src/app/writing/[slug]/page.tsx — pass an unregistered string and
+   *  the lead slot is silently skipped. */
+  leadFigure?: string;
 };
 
 export type Post = PostMeta & {
@@ -33,6 +38,7 @@ export function getAllPosts(): PostMeta[] {
       excerpt: data.excerpt,
       tags: Array.isArray(data.tags) ? data.tags : undefined,
       inlineDate: data.inlineDate === true,
+      leadFigure: typeof data.leadFigure === "string" ? data.leadFigure : undefined,
     } as PostMeta;
   });
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -50,6 +56,7 @@ export function getPost(slug: string): Post | null {
     excerpt: data.excerpt,
     tags: Array.isArray(data.tags) ? data.tags : undefined,
     inlineDate: data.inlineDate === true,
+    leadFigure: typeof data.leadFigure === "string" ? data.leadFigure : undefined,
     content,
   };
 }

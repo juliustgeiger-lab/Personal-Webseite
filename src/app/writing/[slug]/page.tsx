@@ -15,6 +15,15 @@ const baseMdxComponents = {
   HorizonLoop,
 };
 
+// Lead-figure registry — components that can sit ABOVE the article header
+// (h1 + date) when a post's frontmatter declares `leadFigure: <name>`.
+// Keeping this typed as a record of components avoids the JSX types/string
+// dance and lets a missing key fall through to undefined cleanly.
+const LEAD_FIGURE_REGISTRY: Record<string, React.ComponentType> = {
+  HorizonDiagram,
+  HorizonLoop,
+};
+
 export function generateStaticParams() {
   return getAllPosts().map((p) => ({ slug: p.slug }));
 }
@@ -44,8 +53,19 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   );
   const mdxComponents = { ...baseMdxComponents, PostDate };
 
+  // Resolve the lead figure (rendered above the article header) from the
+  // frontmatter string. Unknown names silently render nothing.
+  const LeadFigure = post.leadFigure
+    ? LEAD_FIGURE_REGISTRY[post.leadFigure]
+    : null;
+
   return (
     <article className="page-wrap space-y-8">
+      {LeadFigure && (
+        <div className="post-lead-figure">
+          <LeadFigure />
+        </div>
+      )}
       <header className="space-y-3">
         <h1 className="post-title text-4xl md:text-6xl font-semibold tracking-tight leading-tight">
           {post.title}

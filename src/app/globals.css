@@ -1495,6 +1495,12 @@ footer.site {
 }
 
 /* ----- Horizon loop (causal-flow figure) ----- */
+.hl-figure {
+  margin: 36px 0 48px;
+}
+
+.hl-canvas { width: 100%; }
+
 .hl-svg {
   width: 100%;
   height: auto;
@@ -1502,64 +1508,93 @@ footer.site {
   overflow: visible;
 }
 
-.hl-strategy-box {
-  fill: var(--rule-2);
-  stroke: var(--ink);
-  stroke-width: 1;
+/* Strategy node — dot with breathing aura. Echoes PresentSection. */
+.hl-strategy-dot {
+  fill: var(--ink);
 }
-
-.hl-strategy-pulse {
+.hl-strategy-aura {
   fill: none;
-  stroke: #1e3a8a;
+  stroke: var(--ink);
   stroke-width: 1;
   transform-box: fill-box;
   transform-origin: center;
 }
+.hl-strategy-aura--inner { opacity: 0.20; animation: hl-aura-breathe 4.4s ease-in-out infinite; }
+.hl-strategy-aura--outer { opacity: 0.10; animation: hl-aura-breathe 6.1s ease-in-out -1.4s infinite; }
 
-.hl-strategy-text {
-  font-family: var(--font-jetbrains-mono), monospace;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  fill: var(--ink);
-  font-weight: 500;
-  dominant-baseline: middle;
-  text-anchor: middle;
+@keyframes hl-aura-breathe {
+  0%, 100% { transform: scale(1);    }
+  50%      { transform: scale(1.10); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hl-strategy-aura { animation: none; }
 }
 
-.hl-axis {
+.hl-strategy-label {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  fill: var(--ink-soft);
+  font-weight: 500;
+}
+
+/* Two parallel time-horizon lines */
+.hl-line-actual {
   stroke: var(--ink);
   stroke-width: 1;
 }
+.hl-line-expected {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+  opacity: 0.7;
+}
 
+.hl-line-label {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  fill: var(--ink-soft);
+  font-weight: 500;
+  dominant-baseline: middle;
+}
+.hl-line-label--strong { fill: var(--ink); font-weight: 600; }
+
+/* Markers */
+.hl-pin-tick-actual {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
 .hl-pin-tick-expected {
   stroke: var(--ink);
   stroke-width: 1;
   stroke-dasharray: 3 3;
 }
-
-.hl-pin-tick-actual {
-  stroke: var(--ink);
-  stroke-width: 1.5;
-}
-
-.hl-pin-dot {
+.hl-pin-dot-actual {
   fill: var(--ink);
 }
+.hl-pin-dot-expected {
+  fill: var(--bg);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
 
-.hl-arc {
+/* Flow arcs */
+.hl-arc-influences {
   fill: none;
   stroke: #1e3a8a;
   stroke-width: 1.2;
   stroke-linecap: round;
 }
-
 .hl-arc-informs {
   fill: none;
   stroke: var(--ink);
   stroke-width: 1;
   stroke-dasharray: 3 4;
   stroke-linecap: round;
+  opacity: 0.55;
 }
 
 .hl-flow-label {

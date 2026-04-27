@@ -1,198 +1,262 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import EssayFigure from "./EssayFigure";
 
 /**
- * HorizonLoop — causal view.
+ * HorizonLoop — causal view, shock-driven.
  *
- * A faithful rebuild of the original horizon-diagram.jpg, in the site's
- * grammar. Two nodes — Decision Strategy (left) and Time Horizon (right,
- * with Expected and Actual markers) — and two flows between them:
+ * Reading the figure:
  *
- *   Expected ──── informs ──→  Strategy
- *   Strategy ─── influences ─→ Actual
+ *   - Decision Strategy (left): single ink dot with breathing aura. Quiet
+ *     node, not a box. Echoes PresentSection's living-moment dot.
  *
- * The figure animates the loop in sequence, repeating with small position
- * variation so the relationship feels alive without being noisy:
+ *   - Time horizon (right): TWO parallel lines, tight gap.
+ *       · Top    — solid line, ACTUAL (a single solid tick).
+ *       · Bottom — dashed line, EXPECTED (a hollow tick).
  *
- *   1. Expected pin appears.
- *   2. The "informs" arc draws back from Expected to the Strategy box.
- *   3. The Strategy box pulses (a calibration ring expands outward).
- *   4. Three "influences" arcs draw forward from Strategy to Actual.
- *   5. The Actual pin lands at a position different from Expected.
- *   6. Brief hold.
- *   7. Fade. Reposition. Repeat.
+ *   - Two flows between them:
+ *       · INFORMS    — dashed ink curve, Expected → Strategy (lit pulse
+ *                      travels along it whenever a new shock arrives).
+ *       · INFLUENCES — solid blue curve, Strategy → Actual (a fresh arrow
+ *                      shoots out each cycle to wherever Actual now lands;
+ *                      previous arrows linger and fade as a trail).
  *
- * Visual grammar follows the site rules: hairline strokes, fountain-pen blue
- * for things in motion, mono caps for labels, no shadows, no gradients.
+ * Cycle (every ~3.2s):
+ *
+ *   1. A shock pulse expands out of the Expected pin — new information has
+ *      arrived. (We don't actually know the actual horizon. The expected
+ *      one is what gets revised in real time.)
+ *   2. The Expected pin drifts smoothly to a new position.
+ *   3. A traveling pulse runs along the Informs arc from Expected →
+ *      Strategy (the new info reaching the strategy).
+ *   4. The Strategy aura fires an extra pulse (recalibrating).
+ *   5. A new Influences arrow shoots from Strategy to where Actual now is
+ *      — sometimes shorter than Expected, sometimes longer, sometimes
+ *      close.
+ *   6. The Actual pin slides to where the arrow landed.
+ *   7. Past arrows fade as faint ghosts so the trail of "shots at the
+ *      moving target" stays visible for a beat.
+ *
+ * Visual grammar: hairline strokes, fountain-pen blue for things in motion,
+ * mono caps for labels. Respects prefers-reduced-motion.
  */
 
 const VIEW_W = 760;
-const VIEW_H = 320;
+const VIEW_H = 220;
 
-// Strategy box geometry
-const SBOX = { x: 70, y: 140, w: 200, h: 64 };
-const SBOX_RIGHT = SBOX.x + SBOX.w; // 270
-const SBOX_CENTER_Y = SBOX.y + SBOX.h / 2; // 172
+// Strategy node
+const STRAT_X = 130;
+const STRAT_Y = 110;
 
-// Time axis geometry
-const AXIS_X1 = 330;
-const AXIS_X2 = 720;
-const AXIS_Y = SBOX_CENTER_Y; // align with strategy box center
-const AXIS_W = AXIS_X2 - AXIS_X1;
+// Two parallel time-horizon lines — tight gap (24px).
+const LINE_X1 = 300;
+const LINE_X2 = 720;
+const LINE_W = LINE_X2 - LINE_X1;
+const ACTUAL_Y = 100;
+const EXPECTED_Y = 124;
 
-// Cycle length in seconds
-const CYCLE_S = 8.0;
+// Cycle timing — each beat gets room to land before the next one fires.
+const CYCLE_MS = 5500;
+const PHASE = {
+  shockPulse:    [0,    1100],  // ring expands out of Expected pin
+  expectedShift: [300,  1700],  // pin slides to new position
+  informsTravel: [1100, 2500],  // traveling pulse along the informs arc
+  strategyPulse: [2300, 3100],  // extra ring on the strategy aura
+  influencesShoot:[2900, 3700], // new arrow draws from Strategy to Actual
+  actualShift:   [3400, 4000],  // actual pin slides to landing point
+  // Then ~1.5s hold before the next shock arrives.
+} as const;
+const GHOST_FADE_START_MS = 800;  // delay before ghost begins fading
+const GHOST_FADE_LEN_MS = 3600;   // fade duration
 
-// Phase windows (as fractions of the cycle)
-const P = {
-  expectedIn: { from: 0.04, to: 0.16 },
-  informsDraw: { from: 0.14, to: 0.34 },
-  strategyPulse: { from: 0.30, to: 0.46 },
-  influencesDraw: { from: 0.40, to: 0.66 },
-  actualIn: { from: 0.55, to: 0.72 },
-  hold: { from: 0.72, to: 0.88 },
-  fade: { from: 0.88, to: 1.0 },
-};
+// Bounds for randomly chosen Expected and Actual positions per cycle
+const E_MIN = 0.50, E_MAX = 0.85;
+const A_MIN = 0.18, A_MAX = 0.78;
 
-function ramp(t: number, from: number, to: number): number {
-  if (t <= from) return 0;
-  if (t >= to) return 1;
-  return (t - from) / (to - from);
+function ramp(x: number, from: number, to: number): number {
+  if (x <= from) return 0;
+  if (x >= to) return 1;
+  return (x - from) / (to - from);
+}
+function ease(t: number): number { return 1 - Math.pow(1 - t, 3); }
+function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
+
+// Deterministic per-cycle pseudo-random — same cycle index always yields the
+// same Expected/Actual positions, so refs aren't needed to remember state.
+function rngFor(seed: number): () => number {
+  let s = (seed * 0x9E3779B1) >>> 0;
+  return () => {
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
-function ease(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
+function expectedForCycle(n: number): number {
+  if (n < 0) return 0.66;
+  const r = rngFor(n);
+  return E_MIN + r() * (E_MAX - E_MIN);
+}
+function actualForCycle(n: number): number {
+  if (n < 0) return 0.40;
+  const r = rngFor(n + 9999); // different seed stream
+  return A_MIN + r() * (A_MAX - A_MIN);
 }
 
-// Bezier path string from (x1,y) to (x2,y) with vertical apex offset.
-// apexDy < 0 → arc bows upward, > 0 → bows downward.
-function arcPath(x1: number, y: number, x2: number, y2: number, apexDy: number) {
-  const cx = (x1 + x2) / 2;
-  const cy = (y + y2) / 2 + apexDy;
-  return `M ${x1} ${y} Q ${cx} ${cy} ${x2} ${y2}`;
+function partialQuadratic(
+  x1: number, y1: number,
+  cx: number, cy: number,
+  x2: number, y2: number,
+  progress: number,
+): string {
+  const u = Math.max(0, Math.min(1, progress));
+  if (u <= 0) return "";
+  const p01x = x1 + (cx - x1) * u;
+  const p01y = y1 + (cy - y1) * u;
+  const p11x = cx + (x2 - cx) * u;
+  const p11y = cy + (y2 - cy) * u;
+  const ex = p01x + (p11x - p01x) * u;
+  const ey = p01y + (p11y - p01y) * u;
+  return `M ${x1} ${y1} Q ${p01x.toFixed(2)} ${p01y.toFixed(2)} ${ex.toFixed(2)} ${ey.toFixed(2)}`;
 }
 
-// Sample the bezier at parameter u ∈ [0,1] (used so we can stop the arc
-// partway along its length while it's drawing in).
-function sampleArc(
-  x1: number,
-  y1: number,
-  cx: number,
-  cy: number,
-  x2: number,
-  y2: number,
-  u: number,
-) {
-  const mt = 1 - u;
-  const x = mt * mt * x1 + 2 * mt * u * cx + u * u * x2;
-  const y = mt * mt * y1 + 2 * mt * u * cy + u * u * y2;
-  return { x, y };
+function fullQuadratic(
+  x1: number, y1: number, cx: number, cy: number, x2: number, y2: number,
+): string {
+  return `M ${x1} ${y1} Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${x2.toFixed(2)} ${y2.toFixed(2)}`;
 }
-
-type Endpoints = { eX: number; aX: number };
-
-const VARIATIONS: Endpoints[] = [
-  { eX: 0.62, aX: 0.34 },
-  { eX: 0.78, aX: 0.46 },
-  { eX: 0.55, aX: 0.74 }, // actual exceeds expected — the rare reverse case
-  { eX: 0.84, aX: 0.30 },
-];
 
 export default function HorizonLoop() {
-  // Single time scalar 0..1 within the current cycle, used to drive every
-  // animated attribute. Refs hold the heavy state; t is what re-renders.
-  const [t, setT] = useState(0);
-  const [variationIdx, setVariationIdx] = useState(0);
+  const [, setTick] = useState(0);
   const startRef = useRef<number | null>(null);
-  const cycleRef = useRef(0);
+  const reducedRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      // Settle in a representative final state (post-hold, pre-fade).
-      setT(0.80);
+    reducedRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedRef.current) {
+      setTick(1);
       return;
     }
-
     let raf = 0;
-    const tick = (now: number) => {
+    const loop = (now: number) => {
       if (startRef.current === null) startRef.current = now;
-      const elapsed = (now - startRef.current) / 1000;
-      const cycle = Math.floor(elapsed / CYCLE_S);
-      const within = (elapsed % CYCLE_S) / CYCLE_S;
-      if (cycle !== cycleRef.current) {
-        cycleRef.current = cycle;
-        setVariationIdx((i) => (i + 1) % VARIATIONS.length);
-      }
-      setT(within);
-      raf = requestAnimationFrame(tick);
+      setTick((t) => (t + 1) % 1_000_000);
+      raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(tick);
+    raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  const variation = VARIATIONS[variationIdx];
-  const eX = AXIS_X1 + variation.eX * AXIS_W;
-  const aX = AXIS_X1 + variation.aX * AXIS_W;
+  // Compute everything from elapsed time. No mutable state between frames.
+  const now = typeof performance !== "undefined" ? performance.now() : 0;
+  const elapsed = startRef.current === null ? 0 : now - startRef.current;
+  const cycleN = reducedRef.current ? 1 : Math.floor(elapsed / CYCLE_MS);
+  const within = reducedRef.current ? CYCLE_MS - 100 : elapsed - cycleN * CYCLE_MS;
 
-  // Per-element progress (0..1)
-  const fade = 1 - ramp(t, P.fade.from, P.fade.to);
-  const expectedOpacity = ramp(t, P.expectedIn.from, P.expectedIn.to) * fade;
-  const informsProgress = ease(ramp(t, P.informsDraw.from, P.informsDraw.to));
-  const informsAlpha = (informsProgress > 0 ? 1 : 0) * fade;
-  // Strategy pulse: a ring expanding from the box outward.
-  const pulseT = ramp(t, P.strategyPulse.from, P.strategyPulse.to);
-  const pulseScale = 1 + pulseT * 0.18;
-  const pulseAlpha = pulseT < 1 ? Math.max(0, 1 - pulseT) * 0.9 : 0;
-  // Three influence arcs, each starting slightly later than the previous.
-  const influence0 = ease(ramp(t, P.influencesDraw.from, P.influencesDraw.to));
-  const influence1 = ease(
-    ramp(t, P.influencesDraw.from + 0.02, P.influencesDraw.to + 0.02),
+  // Expected & Actual: smoothly interpolate from previous-cycle value to
+  // current-cycle value over the appropriate phase.
+  const expectedPrev = expectedForCycle(cycleN - 1);
+  const expectedNew = expectedForCycle(cycleN);
+  const eShiftT = ease(ramp(within, PHASE.expectedShift[0], PHASE.expectedShift[1]));
+  const expectedNorm = lerp(expectedPrev, expectedNew, eShiftT);
+
+  const actualPrev = actualForCycle(cycleN - 1);
+  const actualNew = actualForCycle(cycleN);
+  const aShiftT = ease(ramp(within, PHASE.actualShift[0], PHASE.actualShift[1]));
+  const actualNorm = lerp(actualPrev, actualNew, aShiftT);
+
+  const expectedX = LINE_X1 + expectedNorm * LINE_W;
+  const actualX = LINE_X1 + actualNorm * LINE_W;
+
+  // Shock pulse on Expected pin (ring expanding outward)
+  const shockT = ramp(within, PHASE.shockPulse[0], PHASE.shockPulse[1]);
+  const shockR = 6 + shockT * 24;
+  const shockOpacity = shockT > 0 ? Math.max(0, 1 - shockT) * 0.7 : 0;
+
+  // Strategy aura extra pulse (briefly expanding)
+  const stratPulseT = ramp(within, PHASE.strategyPulse[0], PHASE.strategyPulse[1]);
+  const stratPulseR = 12 + stratPulseT * 24;
+  const stratPulseOpacity = stratPulseT > 0 ? Math.max(0, 1 - stratPulseT) * 0.6 : 0;
+
+  // Informs arc — geometry uses CURRENT expected position
+  const informsCx = (expectedX + STRAT_X) / 2;
+  const informsCy = EXPECTED_Y + 64;
+  const informsD = fullQuadratic(
+    expectedX, EXPECTED_Y + 6,
+    informsCx, informsCy,
+    STRAT_X, STRAT_Y + 6,
   );
-  const influence2 = ease(
-    ramp(t, P.influencesDraw.from + 0.04, P.influencesDraw.to + 0.04),
-  );
-  const influencesAlpha = (influence0 > 0 ? 1 : 0) * fade;
-  const actualOpacity = ramp(t, P.actualIn.from, P.actualIn.to) * fade;
+  // Traveling pulse along informs arc — a moving dot on the curve
+  const informsPulseT = ramp(within, PHASE.informsTravel[0], PHASE.informsTravel[1]);
+  const informsPulseVisible = informsPulseT > 0 && informsPulseT < 1;
+  // Sample point at u = informsPulseT (going Expected → Strategy)
+  const informsPulse = (() => {
+    if (!informsPulseVisible) return null;
+    const u = informsPulseT;
+    const mt = 1 - u;
+    const x = mt * mt * expectedX + 2 * mt * u * informsCx + u * u * STRAT_X;
+    const y = mt * mt * (EXPECTED_Y + 6) + 2 * mt * u * informsCy + u * u * (STRAT_Y + 6);
+    return { x, y };
+  })();
 
-  // Informs arc — from Expected pin curving DOWN under the figure to the
-  // Strategy box right edge.
-  const informsX1 = eX;
-  const informsY1 = AXIS_Y + 4;
-  const informsX2 = SBOX_RIGHT + 8;
-  const informsY2 = AXIS_Y;
-  const informsCx = (informsX1 + informsX2) / 2;
-  const informsCy = AXIS_Y + 110;
+  // Influences shots — current cycle's arrow being drawn, plus ghosts of
+  // recent past cycles that are still fading.
+  const shots: Array<{
+    cycleN: number;
+    actualNorm: number;
+    progress: number;   // 0..1 draw progress
+    opacity: number;
+    isCurrent: boolean;
+  }> = [];
 
-  // Influences arcs — from Strategy box right edge curving UP to Actual pin.
-  // Three arcs with slightly different apex heights and end x-offsets to
-  // mimic the original's "distribution of effect" feeling.
-  const inflX1 = SBOX_RIGHT;
-  const inflY1 = AXIS_Y;
-  const inflArcs = [
-    { apex: -110, endDx: -10 },
-    { apex: -130, endDx: 0 },
-    { apex: -100, endDx: 10 },
-  ];
+  // Look back several cycles for ghosts
+  for (let n = Math.max(0, cycleN - 4); n <= cycleN; n++) {
+    const aN = actualForCycle(n);
+    if (n === cycleN) {
+      const p = ramp(within, PHASE.influencesShoot[0], PHASE.influencesShoot[1]);
+      if (p > 0) {
+        shots.push({
+          cycleN: n, actualNorm: aN, progress: p, opacity: 1, isCurrent: true,
+        });
+      }
+    } else {
+      // Time since this cycle's shoot completed
+      const completedAt = n * CYCLE_MS + PHASE.influencesShoot[1];
+      const sinceComplete = elapsed - completedAt;
+      if (sinceComplete <= 0) continue;
+      const fade = Math.max(0, sinceComplete - GHOST_FADE_START_MS) / GHOST_FADE_LEN_MS;
+      if (fade >= 1) continue;
+      const opacity = (1 - fade) * 0.32;
+      shots.push({
+        cycleN: n, actualNorm: aN, progress: 1, opacity, isCurrent: false,
+      });
+    }
+  }
+
+  // Build a bezier from Strategy → (LINE_X1 + aN * LINE_W, ACTUAL_Y) per shot
+  function buildShotPath(aN: number, progress: number) {
+    const endX = LINE_X1 + aN * LINE_W;
+    const cx = (STRAT_X + endX) / 2;
+    const cy = Math.min(STRAT_Y, ACTUAL_Y) - 60;
+    if (progress >= 1) {
+      return { d: fullQuadratic(STRAT_X, STRAT_Y - 6, cx, cy, endX, ACTUAL_Y + 4), endpointX: endX };
+    }
+    return { d: partialQuadratic(STRAT_X, STRAT_Y - 6, cx, cy, endX, ACTUAL_Y + 4, progress), endpointX: endX };
+  }
 
   return (
-    <EssayFigure
-      label="§ Fig 2 — Horizon: the causal loop"
-      caption="The expected horizon informs the strategy. The strategy influences the actual horizon. The two are linked, and the two are almost never the same."
-    >
+    <figure className="hl-figure">
       <div className="hl-canvas">
         <svg
           className="hl-svg"
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
           preserveAspectRatio="xMidYMid meet"
           role="img"
-          aria-label="A loop showing how the expected time horizon informs the decision strategy, and the strategy influences the actual time horizon."
+          aria-label="A loop showing how the expected time horizon, when shocked by new information, informs the decision strategy, which then influences the actual time horizon. The blue arrow keeps shooting at a moving target."
         >
           <defs>
-            {/* Arrowhead for the influences arcs (blue) */}
             <marker
               id="hl-arrow-blue"
               viewBox="0 0 10 10"
@@ -204,7 +268,17 @@ export default function HorizonLoop() {
             >
               <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e3a8a" />
             </marker>
-            {/* Arrowhead for the informs arc (ink, smaller) */}
+            <marker
+              id="hl-arrow-blue-faint"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e3a8a" opacity="0.4" />
+            </marker>
             <marker
               id="hl-arrow-ink"
               viewBox="0 0 10 10"
@@ -218,257 +292,156 @@ export default function HorizonLoop() {
             </marker>
           </defs>
 
-          {/* Time axis (always visible) */}
+          {/* Two parallel time lines */}
           <line
-            x1={AXIS_X1}
-            y1={AXIS_Y}
-            x2={AXIS_X2}
-            y2={AXIS_Y}
-            className="hl-axis"
+            x1={LINE_X1}
+            y1={ACTUAL_Y}
+            x2={LINE_X2}
+            y2={ACTUAL_Y}
+            className="hl-line-actual"
+          />
+          <line
+            x1={LINE_X1}
+            y1={EXPECTED_Y}
+            x2={LINE_X2}
+            y2={EXPECTED_Y}
+            className="hl-line-expected"
           />
           <text
-            x={AXIS_X2}
-            y={AXIS_Y - 12}
-            textAnchor="end"
-            className="hl-flow-label"
-            opacity={0.75}
+            x={LINE_X2 + 10}
+            y={ACTUAL_Y + 4}
+            className="hl-line-label hl-line-label--strong"
           >
-            TIME HORIZON →
+            ACTUAL
+          </text>
+          <text
+            x={LINE_X2 + 10}
+            y={EXPECTED_Y + 4}
+            className="hl-line-label"
+          >
+            EXPECTED
           </text>
 
-          {/* Decision Strategy box (always visible). Pulse ring expands outward
-              during the strategyPulse phase. */}
-          <g>
-            <rect
-              x={SBOX.x - 6}
-              y={SBOX.y - 6}
-              width={SBOX.w + 12}
-              height={SBOX.h + 12}
-              rx={12}
-              className="hl-strategy-pulse"
-              style={{
-                transform: `scale(${pulseScale})`,
-                transformOrigin: `${SBOX.x + SBOX.w / 2}px ${SBOX_CENTER_Y}px`,
-                opacity: pulseAlpha,
-              }}
-            />
-            <rect
-              x={SBOX.x}
-              y={SBOX.y}
-              width={SBOX.w}
-              height={SBOX.h}
-              rx={10}
-              className="hl-strategy-box"
-            />
-            <text
-              x={SBOX.x + SBOX.w / 2}
-              y={SBOX_CENTER_Y}
-              className="hl-strategy-text"
-            >
-              DECISION STRATEGY
-            </text>
-          </g>
-
-          {/* Expected pin */}
-          <g style={{ opacity: expectedOpacity }}>
-            <line
-              x1={eX}
-              y1={AXIS_Y - 18}
-              x2={eX}
-              y2={AXIS_Y + 18}
-              className="hl-pin-tick-expected"
-            />
-            <circle cx={eX} cy={AXIS_Y - 22} r={3.5} className="hl-pin-dot" />
-            <text
-              x={eX}
-              y={AXIS_Y + 32}
-              textAnchor="middle"
-              className="hd-axis-label"
-            >
-              EXPECTED
-            </text>
-            <text
-              x={eX - 12}
-              y={AXIS_Y + 4}
-              textAnchor="middle"
-              className="hd-chev"
-              style={{ opacity: 0.55 }}
-            >
-              ‹
-            </text>
-            <text
-              x={eX + 12}
-              y={AXIS_Y + 4}
-              textAnchor="middle"
-              className="hd-chev"
-              style={{ opacity: 0.55 }}
-            >
-              ›
-            </text>
-          </g>
-
-          {/* Informs arc (Expected → Strategy) — dashed ink, draws from
-              Expected end backwards to the Strategy box. We achieve the
-              "draws in" effect by sampling the bezier and rendering only the
-              traced segment. */}
-          {informsProgress > 0 && (
-            <PartialQuadratic
-              x1={informsX1}
-              y1={informsY1}
-              cx={informsCx}
-              cy={informsCy}
-              x2={informsX2}
-              y2={informsY2}
-              progress={informsProgress}
-              className="hl-arc-informs"
-              opacity={informsAlpha}
-              markerEnd={informsProgress >= 0.99 ? "url(#hl-arrow-ink)" : undefined}
-            />
-          )}
-          {/* INFORMS label, fades in with the arc */}
-          {informsAlpha > 0 && (
-            <text
-              x={informsCx}
-              y={AXIS_Y + 78}
-              textAnchor="middle"
-              className="hl-flow-label"
-              opacity={informsProgress * fade * 0.85}
-            >
-              INFORMS
-            </text>
-          )}
-
-          {/* Influences arcs (Strategy → Actual) */}
-          {inflArcs.map((cfg, i) => {
-            const progress = i === 0 ? influence0 : i === 1 ? influence1 : influence2;
-            if (progress <= 0) return null;
-            const endX = aX + cfg.endDx;
-            const endY = AXIS_Y;
-            const cx = (inflX1 + endX) / 2;
-            const cy = (inflY1 + endY) / 2 + cfg.apex;
-            const opacity = (i === 1 ? 0.95 : 0.6) * influencesAlpha;
-            return (
-              <PartialQuadratic
-                key={i}
-                x1={inflX1}
-                y1={inflY1}
-                cx={cx}
-                cy={cy}
-                x2={endX}
-                y2={endY}
-                progress={progress}
-                className="hl-arc"
-                opacity={opacity}
-                markerEnd={
-                  progress >= 0.99 && i === 1 ? "url(#hl-arrow-blue)" : undefined
-                }
+          {/* Strategy node — dot + breathing aura + label + cycle pulse */}
+          <g transform={`translate(${STRAT_X} ${STRAT_Y})`}>
+            <circle cx={0} cy={0} r={26} className="hl-strategy-aura hl-strategy-aura--outer" />
+            <circle cx={0} cy={0} r={16} className="hl-strategy-aura hl-strategy-aura--inner" />
+            {stratPulseOpacity > 0 && (
+              <circle
+                cx={0}
+                cy={0}
+                r={stratPulseR}
+                fill="none"
+                stroke="#1e3a8a"
+                strokeWidth="1"
+                opacity={stratPulseOpacity}
               />
-            );
-          })}
-          {/* INFLUENCES label, fades in with the arcs */}
-          {influencesAlpha > 0 && (
-            <text
-              x={(inflX1 + aX) / 2}
-              y={AXIS_Y - 110}
-              textAnchor="middle"
-              className="hl-flow-label"
-              opacity={influence0 * fade * 0.85}
-            >
-              INFLUENCES
-            </text>
+            )}
+            <circle cx={0} cy={0} r={6} className="hl-strategy-dot" />
+          </g>
+          <text
+            x={STRAT_X}
+            y={STRAT_Y + 52}
+            textAnchor="middle"
+            className="hl-strategy-label"
+          >
+            DECISION STRATEGY
+          </text>
+
+          {/* Informs arc — always present, with a moving lit pulse during the
+              informs phase of each cycle */}
+          <path
+            d={informsD}
+            className="hl-arc-informs"
+            markerEnd="url(#hl-arrow-ink)"
+          />
+          {informsPulse && (
+            <circle
+              cx={informsPulse.x}
+              cy={informsPulse.y}
+              r={3}
+              fill="#1e3a8a"
+              opacity={0.85}
+            />
           )}
+          <text
+            x={informsCx}
+            y={194}
+            textAnchor="middle"
+            className="hl-flow-label"
+          >
+            INFORMS
+          </text>
+
+          {/* Influences shots — past ghosts first (behind), current shot last */}
+          {shots
+            .slice()
+            .sort((a, b) => (a.isCurrent ? 1 : -1) - (b.isCurrent ? 1 : -1))
+            .map((shot, i) => {
+              const path = buildShotPath(shot.actualNorm, shot.progress);
+              return (
+                <path
+                  key={`${shot.cycleN}-${i}`}
+                  d={path.d}
+                  className="hl-arc-influences"
+                  opacity={shot.opacity}
+                  markerEnd={
+                    shot.progress >= 0.99
+                      ? shot.isCurrent
+                        ? "url(#hl-arrow-blue)"
+                        : "url(#hl-arrow-blue-faint)"
+                      : undefined
+                  }
+                />
+              );
+            })}
+          <text
+            x={(STRAT_X + (LINE_X1 + actualNorm * LINE_W)) / 2}
+            y={28}
+            textAnchor="middle"
+            className="hl-flow-label"
+          >
+            INFLUENCES
+          </text>
+
+          {/* Expected pin — fixed-style (hollow, dashed) but x moves on shocks */}
+          <line
+            x1={expectedX}
+            y1={EXPECTED_Y - 11}
+            x2={expectedX}
+            y2={EXPECTED_Y + 11}
+            className="hl-pin-tick-expected"
+          />
+          {/* Shock ring expanding from Expected pin */}
+          {shockOpacity > 0 && (
+            <circle
+              cx={expectedX}
+              cy={EXPECTED_Y}
+              r={shockR}
+              fill="none"
+              stroke="#1e3a8a"
+              strokeWidth="1"
+              opacity={shockOpacity}
+            />
+          )}
+          <circle
+            cx={expectedX}
+            cy={EXPECTED_Y}
+            r={4}
+            className="hl-pin-dot-expected"
+          />
 
           {/* Actual pin */}
-          <g style={{ opacity: actualOpacity }}>
-            <line
-              x1={aX}
-              y1={AXIS_Y - 18}
-              x2={aX}
-              y2={AXIS_Y + 18}
-              className="hl-pin-tick-actual"
-            />
-            <circle cx={aX} cy={AXIS_Y - 22} r={4} className="hl-pin-dot" />
-            <text
-              x={aX}
-              y={AXIS_Y + 32}
-              textAnchor="middle"
-              className="hd-axis-label hd-axis-label--strong"
-            >
-              ACTUAL
-            </text>
-            <text
-              x={aX - 12}
-              y={AXIS_Y + 4}
-              textAnchor="middle"
-              className="hd-chev"
-              style={{ opacity: 0.55 }}
-            >
-              ‹
-            </text>
-            <text
-              x={aX + 12}
-              y={AXIS_Y + 4}
-              textAnchor="middle"
-              className="hd-chev"
-              style={{ opacity: 0.55 }}
-            >
-              ›
-            </text>
-          </g>
+          <line
+            x1={actualX}
+            y1={ACTUAL_Y - 11}
+            x2={actualX}
+            y2={ACTUAL_Y + 11}
+            className="hl-pin-tick-actual"
+          />
+          <circle cx={actualX} cy={ACTUAL_Y} r={4} className="hl-pin-dot-actual" />
         </svg>
       </div>
-    </EssayFigure>
-  );
-}
-
-/**
- * A quadratic bezier that renders only the first `progress` fraction of its
- * curve. Used so arcs can "draw in" without relying on stroke-dasharray
- * (which would require knowing total path length up front and breaks for
- * tightly curved beziers).
- */
-function PartialQuadratic({
-  x1,
-  y1,
-  cx,
-  cy,
-  x2,
-  y2,
-  progress,
-  className,
-  opacity,
-  markerEnd,
-}: {
-  x1: number;
-  y1: number;
-  cx: number;
-  cy: number;
-  x2: number;
-  y2: number;
-  progress: number;
-  className?: string;
-  opacity?: number;
-  markerEnd?: string;
-}) {
-  // De Casteljau split of the quadratic at u = progress. The first half
-  // gives a smaller quadratic with control points (x1,y1), (split1), (splitEnd).
-  const u = Math.max(0, Math.min(1, progress));
-  // P0_1 between (x1,y1) and (cx,cy)
-  const p01x = x1 + (cx - x1) * u;
-  const p01y = y1 + (cy - y1) * u;
-  // P1_1 between (cx,cy) and (x2,y2)
-  const p11x = cx + (x2 - cx) * u;
-  const p11y = cy + (y2 - cy) * u;
-  // The endpoint of the partial segment is the lerp between p01 and p11
-  const endX = p01x + (p11x - p01x) * u;
-  const endY = p01y + (p11y - p01y) * u;
-  const d = `M ${x1} ${y1} Q ${p01x.toFixed(2)} ${p01y.toFixed(2)} ${endX.toFixed(2)} ${endY.toFixed(2)}`;
-  return (
-    <path
-      d={d}
-      className={className}
-      opacity={opacity}
-      markerEnd={markerEnd}
-    />
+    </figure>
   );
 }

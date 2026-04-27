@@ -140,55 +140,69 @@ type LifeEntry = {
   message: string;
 };
 
+// One ordinary life. The point is not drama — most events are everyday
+// choices, routine appointments, or pieces of information. The figure
+// rewards a reader who notices that small things compound, that the
+// strategy often doesn't track lifestyle, and that diagnoses are usually
+// information about a condition that was already there.
+//
+// Type semantics (sharpened):
+//   A — information reaches strategy. Your biology doesn't change.
+//       (checkups, reading a book, a friend's news, a bloodwork finding
+//       that surfaces a pre-existing condition.)
+//   B — your lifestyle changes your biology, but the formal plan doesn't
+//       integrate it. (started running, smoking at parties, got a dog.)
+//   C — a deliberate intervention that actually changes biology AND
+//       updates the plan. (statin therapy, CPAP, hip replacement.)
 const LIFE_STORY: LifeEntry[] = [
-  // Young adult — establishing
-  { age: 25, type: "A", newExpected: 0.86,
-    message: "Age 25 · First adult checkup. Strategy informed. Actual unchanged." },
-  { age: 26, type: "B", newActual: 0.65,
-    message: "Age 26 · First cigarettes at parties. Actual shortens. Strategy unaware." },
-  { age: 28, type: "A", newExpected: 0.78,
-    message: "Age 28 · Reads 'Outlive' on the plane. Strategy informed. Actual unchanged." },
-  { age: 30, type: "B", newActual: 0.78,
-    message: "Age 30 · Training for a marathon. Actual extends. Strategy unaware." },
-  // First family signal
-  { age: 32, type: "C", newExpected: 0.65, newActual: 0.62,
-    message: "Age 32 · Aunt has a heart attack. Strategy informed. Actual shortens." },
-  { age: 35, type: "B", newActual: 0.78,
-    message: "Age 35 · Quit smoking for good. Actual extends. Strategy unaware." },
+  // Young adult — small choices
+  { age: 25, type: "A", newExpected: 0.85,
+    message: "Age 25 · Annual checkup. Strategy informed. Actual unchanged." },
+  { age: 27, type: "B", newActual: 0.30,
+    message: "Age 27 · First cigarettes at parties. Actual shortens. Strategy unaware." },
+  { age: 30, type: "B", newActual: 0.55,
+    message: "Age 30 · Running on weekends. Actual extends. Strategy unaware." },
+  { age: 33, type: "A", newExpected: 0.78,
+    message: "Age 33 · Reads 'Outlive' on the plane. Strategy informed. Actual unchanged." },
+  { age: 35, type: "B", newActual: 0.65,
+    message: "Age 35 · Switched to a Mediterranean diet. Actual extends. Strategy unaware." },
   { age: 38, type: "A", newExpected: 0.72,
-    message: "Age 38 · Old friend's diagnosis. Strategy informed. Actual unchanged." },
-  // 40s
-  { age: 41, type: "B", newActual: 0.88,
-    message: "Age 41 · Started weight training. Actual extends. Strategy unaware." },
-  { age: 43, type: "C", newExpected: 0.55, newActual: 0.65,
-    message: "Age 43 · Routine scan finds a polyp. Strategy informed. Actual shortens." },
-  { age: 45, type: "B", newActual: 0.45,
-    message: "Age 45 · Took up base jumping. Actual shortens. Strategy unaware." },
-  { age: 47, type: "B", newActual: 0.32,
-    message: "Age 47 · Divorce, chronic stress. Actual shortens. Strategy unaware." },
-  // The diagnosis
-  { age: 50, type: "C", newExpected: 0.32, newActual: 0.20,
-    message: "Age 50 · Cancer diagnosis. Strategy informed. Actual shortens." },
-  { age: 51, type: "A", newExpected: 0.40,
-    message: "Age 51 · Reads survivor stories. Strategy informed. Actual unchanged." },
-  { age: 52, type: "C", newExpected: 0.58, newActual: 0.55,
-    message: "Age 52 · Trial drug works. Strategy informed. Actual extends." },
-  { age: 55, type: "B", newActual: 0.68,
-    message: "Age 55 · Sleep finally fixed. Actual extends. Strategy unaware." },
-  // Late
-  { age: 60, type: "A", newExpected: 0.45,
+    message: "Age 38 · New sleep study published. Strategy informed. Actual unchanged." },
+  { age: 40, type: "B", newActual: 0.74,
+    message: "Age 40 · Stopped weekday drinking. Actual extends. Strategy unaware." },
+  // 40s — first signal, more lifestyle
+  { age: 43, type: "A", newExpected: 0.65,
+    message: "Age 43 · Bloodwork: cholesterol up. Strategy informed. Actual unchanged." },
+  { age: 45, type: "B", newActual: 0.82,
+    message: "Age 45 · Cycling to work. Actual extends. Strategy unaware." },
+  { age: 48, type: "B", newActual: 0.65,
+    message: "Age 48 · Skipped the gym for a year. Actual shortens. Strategy unaware." },
+  // 50s — first interventions
+  { age: 50, type: "C", newExpected: 0.72, newActual: 0.80,
+    message: "Age 50 · Started a statin. Strategy informed. Actual extends." },
+  { age: 53, type: "B", newActual: 0.86,
+    message: "Age 53 · Joined a hiking club. Actual extends. Strategy unaware." },
+  { age: 55, type: "C", newExpected: 0.78, newActual: 0.92,
+    message: "Age 55 · CPAP for sleep apnea. Strategy informed. Actual extends." },
+  { age: 58, type: "A", newExpected: 0.70,
+    message: "Age 58 · Friend's heart attack. Strategy informed. Actual unchanged." },
+  // 60s — settling
+  { age: 60, type: "A", newExpected: 0.62,
     message: "Age 60 · Retirement begins. Strategy informed. Actual unchanged." },
-  { age: 63, type: "B", newActual: 0.78,
-    message: "Age 63 · Daily walks become ritual. Actual extends. Strategy unaware." },
-  { age: 65, type: "C", newExpected: 0.65, newActual: 0.85,
-    message: "Age 65 · Genetic therapy succeeds. Strategy informed. Actual extends." },
-  // Closing
-  { age: 70, type: "C", newExpected: 0.30, newActual: 0.45,
-    message: "Age 70 · Heart event. Strategy informed. Actual shortens." },
-  { age: 73, type: "B", newActual: 0.25,
-    message: "Age 73 · Pneumonia. Actual shortens. Strategy unaware." },
-  { age: 75, type: "C", newExpected: 0.20, newActual: 0.15,
-    message: "Age 75 · Final diagnosis. Strategy informed. Actual shortens." },
+  { age: 62, type: "B", newActual: 0.85,
+    message: "Age 62 · Got a dog. Actual extends. Strategy unaware." },
+  { age: 65, type: "A", newExpected: 0.55,
+    message: "Age 65 · Annual physical, all clear. Strategy informed. Actual unchanged." },
+  // 60s late — intervention
+  { age: 68, type: "C", newExpected: 0.45, newActual: 0.65,
+    message: "Age 68 · Hip replacement. Strategy informed. Actual shortens." },
+  { age: 71, type: "B", newActual: 0.78,
+    message: "Age 71 · Took up gardening. Actual extends. Strategy unaware." },
+  // 70s — gentle
+  { age: 73, type: "A", newExpected: 0.38,
+    message: "Age 73 · Mild fall, recovers. Strategy informed. Actual unchanged." },
+  { age: 75, type: "A", newExpected: 0.32,
+    message: "Age 75 · Annual physical, still fine. Strategy informed. Actual unchanged." },
 ];
 
 // Pacing: bigger events get more breathing room.

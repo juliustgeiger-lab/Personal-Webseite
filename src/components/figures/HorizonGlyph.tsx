@@ -38,8 +38,13 @@ const A_AMP = 0.24;
 const E_OMEGA = 0.20;
 const A_OMEGA = 0.27;
 const A_PHASE = 1.6;
-// Ease-back factor when returning to default after mouse-leave.
+// Ease-back factor — both for E/A → target and target → resting position.
 const APPROACH = 0.06;
+// Amplitude envelope grows toward 1 while hovered, shrinks toward 0 when
+// not, at this per-frame rate. ~0.03 ≈ 550ms to reach >99% saturation, so
+// the sine doesn't pop in at full amplitude — it grows out of the resting
+// point. Tweak: 0.02 for a slower fade-in, 0.05 for a snappier exit.
+const ENVELOPE_RATE = 0.03;
 
 export default function HorizonGlyph() {
   const [eVal, setEVal] = useState(E_DEFAULT);
@@ -48,6 +53,11 @@ export default function HorizonGlyph() {
   const hoveredRef = useRef(false);
   const eRef = useRef(E_DEFAULT);
   const aRef = useRef(A_DEFAULT);
+  // Amplitude envelope: 0 = static (no sine contribution, target = default),
+  // 1 = full ambient (target = E_MID + sin*E_AMP). Lives in a ref because
+  // the envelope itself doesn't need to drive a re-render — the eVal/aVal
+  // state setters do that downstream.
+  const envRef = useRef(0);
   eRef.current = eVal;
   aRef.current = aVal;
 
@@ -72,32 +82,45 @@ export default function HorizonGlyph() {
       if (start === null) start = now;
       const t = (now - start) / 1000;
 
-      if (hoveredRef.current) {
-        // Ease toward the sine ambient instead of snapping to it. The
-        // hover-out path already eases back toward the default; mirroring
-        // that on the way in removes the jump from default → first sine
-        // value (especially Actual, which can leap ~0.3 in one frame).
-        const eAmbient = E_MID + E_AMP * Math.sin(t * E_OMEGA);
-        const aAmbient = A_MID + A_AMP * Math.sin(t * A_OMEGA + A_PHASE);
-        setEVal((v) => v + (eAmbient - v) * APPROACH);
-        setAVal((v) => v + (aAmbient - v) * APPROACH);
-        raf = requestAnimationFrame(tick);
-      } else {
-        const dE = E_DEFAULT - eRef.current;
-        const dA = A_DEFAULT - aRef.current;
-        const settled = Math.abs(dE) < 5e-4 && Math.abs(dA) < 5e-4;
-        if (settled) {
-          // Snap exactly to default and idle the loop.
-          if (eRef.current !== E_DEFAULT) setEVal(E_DEFAULT);
-          if (aRef.current !== A_DEFAULT) setAVal(A_DEFAULT);
-          raf = 0;
-          start = null;
-          return;
-        }
-        setEVal((v) => v + (E_DEFAULT - v) * APPROACH);
-        setAVal((v) => v + (A_DEFAULT - v) * APPROACH);
-        raf = requestAnimationFrame(tick);
+      // Step 1 — ease the amplitude envelope toward 1 (hovered) or 0 (not).
+      // This makes the *liveliness* of the sine fade in and out, separate
+      // from the value chasing its target.
+      const targetEnv = hoveredRef.current ? 1 : 0;
+      const env = envRef.current + (targetEnv - envRef.current) * ENVELOPE_RATE;
+      envRef.current = env;
+
+      // Step 2 — compute the per-frame target as a blend between the static
+      // resting position (envelope=0 → exactly E_DEFAULT/A_DEFAULT) and the
+      // full sine ambient (envelope=1 → original E_MID + sin*E_AMP shape).
+      // Both the centre point AND the amplitude scale with the envelope, so
+      // the wave grows out of the resting point rather than appearing in
+      // mid-stride.
+      const baseE = E_DEFAULT + (E_MID - E_DEFAULT) * env;
+      const baseA = A_DEFAULT + (A_MID - A_DEFAULT) * env;
+      const eTarget = baseE + E_AMP * env * Math.sin(t * E_OMEGA);
+      const aTarget = baseA + A_AMP * env * Math.sin(t * A_OMEGA + A_PHASE);
+
+      // Step 3 — values still chase target at APPROACH (existing behaviour).
+      setEVal((v) => v + (eTarget - v) * APPROACH);
+      setAVal((v) => v + (aTarget - v) * APPROACH);
+
+      // Idle the loop only when both the envelope and the values have
+      // settled at rest. While the envelope is shrinking back, the loop
+      // stays alive even after the user has left the row.
+      const settled =
+        !hoveredRef.current &&
+        env < 5e-4 &&
+        Math.abs(eRef.current - E_DEFAULT) < 5e-4 &&
+        Math.abs(aRef.current - A_DEFAULT) < 5e-4;
+      if (settled) {
+        envRef.current = 0;
+        if (eRef.current !== E_DEFAULT) setEVal(E_DEFAULT);
+        if (aRef.current !== A_DEFAULT) setAVal(A_DEFAULT);
+        raf = 0;
+        start = null;
+        return;
       }
+      raf = requestAnimationFrame(tick);
     };
 
     const onEnter = () => {

@@ -321,10 +321,6 @@ export default function HorizonDiagram() {
           </g>
         </svg>
       </div>
-      <figcaption className="hd-caption">
-        From now, your strategy runs to the horizon you expected. The hatch
-        is where expected and actual diverge.
-      </figcaption>
     </figure>
   );
 }

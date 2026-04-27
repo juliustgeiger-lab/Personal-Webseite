@@ -1608,17 +1608,33 @@ footer.site {
 
 /* ===== Author portraits ===== */
 
-/* About page — single portrait centred between the H1 and the bio. The
-   image is already a circle-cropped PNG with a transparent background, but
-   border-radius: 50% acts as a guard so a future re-export can't break the
-   silhouette. */
+/* About page — small magazine-style portrait floated alongside the opening
+   paragraph. shape-outside: circle() makes the prose wrap to the circular
+   edge instead of a rectangular bounding box, which is what sells the
+   editorial look. Sized small so it accents rather than dominates the
+   page; when a more expressive headshot replaces this placeholder, only
+   the <img src=…> needs to change. */
 .about-portrait {
-  display: block;
-  width: 180px;
-  height: 180px;
-  margin: 4px auto 0;
+  float: left;
+  width: 150px;
+  height: 150px;
+  margin: 4px 22px 6px 0;
   border-radius: 50%;
   object-fit: cover;
+  shape-outside: circle();
+}
+
+/* On narrow screens the float crams the first paragraph against the edge.
+   Drop to a centred block above the prose — still subtle, no longer crowded. */
+@media (max-width: 600px) {
+  .about-portrait {
+    float: none;
+    display: block;
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 12px;
+    shape-outside: none;
+  }
 }
 
 /* Article footer — small avatar + name + tagline + link to /about. Sits

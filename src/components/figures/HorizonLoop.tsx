@@ -124,40 +124,80 @@ const EXPECTED_RANGE = 0.40;
 
 const SCHEDULE_LEN = 100;
 
-const MESSAGES_A = [
-  "Annual checkup — no change.",
-  "Mortality study read — projection holds.",
-  "Birthday passed — horizon unchanged.",
-  "Friend's diagnosis — reflection only.",
-  "New paper on aging — no update.",
-  "Doctor's optimistic note — strategy holds.",
+// One hand-crafted life — 25 → 75 — that loops with a soft chapter break.
+//
+// Each entry sets the new Expected/Actual position the event lands on (or
+// leaves undefined if that side is unaffected). Banner format is locked:
+//   "Age X · CAUSE. Strategy [informed/unaware]. Actual [unchanged/shortens/extends]."
+//
+// Position values are tuned so consecutive markers along the same axis are
+// always visually distinct (deltas ≥ 0.07).
+type LifeEntry = {
+  age: number;
+  type: "A" | "B" | "C";
+  newExpected?: number;
+  newActual?: number;
+  message: string;
+};
+
+const LIFE_STORY: LifeEntry[] = [
+  // Young adult — establishing
+  { age: 25, type: "A", newExpected: 0.86,
+    message: "Age 25 · First adult checkup. Strategy informed. Actual unchanged." },
+  { age: 26, type: "B", newActual: 0.65,
+    message: "Age 26 · First cigarettes at parties. Actual shortens. Strategy unaware." },
+  { age: 28, type: "A", newExpected: 0.78,
+    message: "Age 28 · Reads 'Outlive' on the plane. Strategy informed. Actual unchanged." },
+  { age: 30, type: "B", newActual: 0.78,
+    message: "Age 30 · Training for a marathon. Actual extends. Strategy unaware." },
+  // First family signal
+  { age: 32, type: "C", newExpected: 0.65, newActual: 0.62,
+    message: "Age 32 · Aunt has a heart attack. Strategy informed. Actual shortens." },
+  { age: 35, type: "B", newActual: 0.78,
+    message: "Age 35 · Quit smoking for good. Actual extends. Strategy unaware." },
+  { age: 38, type: "A", newExpected: 0.72,
+    message: "Age 38 · Old friend's diagnosis. Strategy informed. Actual unchanged." },
+  // 40s
+  { age: 41, type: "B", newActual: 0.88,
+    message: "Age 41 · Started weight training. Actual extends. Strategy unaware." },
+  { age: 43, type: "C", newExpected: 0.55, newActual: 0.65,
+    message: "Age 43 · Routine scan finds a polyp. Strategy informed. Actual shortens." },
+  { age: 45, type: "B", newActual: 0.45,
+    message: "Age 45 · Took up base jumping. Actual shortens. Strategy unaware." },
+  { age: 47, type: "B", newActual: 0.32,
+    message: "Age 47 · Divorce, chronic stress. Actual shortens. Strategy unaware." },
+  // The diagnosis
+  { age: 50, type: "C", newExpected: 0.32, newActual: 0.20,
+    message: "Age 50 · Cancer diagnosis. Strategy informed. Actual shortens." },
+  { age: 51, type: "A", newExpected: 0.40,
+    message: "Age 51 · Reads survivor stories. Strategy informed. Actual unchanged." },
+  { age: 52, type: "C", newExpected: 0.58, newActual: 0.55,
+    message: "Age 52 · Trial drug works. Strategy informed. Actual extends." },
+  { age: 55, type: "B", newActual: 0.68,
+    message: "Age 55 · Sleep finally fixed. Actual extends. Strategy unaware." },
+  // Late
+  { age: 60, type: "A", newExpected: 0.45,
+    message: "Age 60 · Retirement begins. Strategy informed. Actual unchanged." },
+  { age: 63, type: "B", newActual: 0.78,
+    message: "Age 63 · Daily walks become ritual. Actual extends. Strategy unaware." },
+  { age: 65, type: "C", newExpected: 0.65, newActual: 0.85,
+    message: "Age 65 · Genetic therapy succeeds. Strategy informed. Actual extends." },
+  // Closing
+  { age: 70, type: "C", newExpected: 0.30, newActual: 0.45,
+    message: "Age 70 · Heart event. Strategy informed. Actual shortens." },
+  { age: 73, type: "B", newActual: 0.25,
+    message: "Age 73 · Pneumonia. Actual shortens. Strategy unaware." },
+  { age: 75, type: "C", newExpected: 0.20, newActual: 0.15,
+    message: "Age 75 · Final diagnosis. Strategy informed. Actual shortens." },
 ];
-const MESSAGES_B_SHORT = [
-  "Cancer diagnosis — horizon shortens.",
-  "Started smoking — horizon shrinks.",
-  "Heart event — horizon shrinks.",
-  "Started base jumping — horizon shortens.",
-  "Pandemic exposure — horizon shortens.",
-  "Severe accident — horizon shrinks.",
-];
-const MESSAGES_B_LONG = [
-  "Life-extension drug approved — horizon extends.",
-  "Started running daily — horizon extends.",
-  "Quit smoking — horizon recovers.",
-  "Genetic therapy succeeds — horizon extends.",
-  "Found a new doctor — horizon extends.",
-  "Sleep finally fixed — horizon extends.",
-];
-const MESSAGES_C_SHORT = [
-  "New diagnosis — strategy adjusts. Horizon shortens.",
-  "Family history revealed — strategy hardens. Horizon shrinks.",
-  "Bad scan — strategy pivots. Horizon shrinks.",
-];
-const MESSAGES_C_LONG = [
-  "Medical breakthrough — strategy adapts. Horizon extends.",
-  "Optimistic projection — strategy loosens. Horizon extends.",
-  "New protocol — strategy widens. Horizon extends.",
-];
+
+// Pacing: bigger events get more breathing room.
+const CALM_BY_TYPE = { A: 1200, B: 1600, C: 2400 } as const;
+// End-of-life soft chapter break before the loop restarts.
+const LIFE_TAIL_MS = 2400;
+// Fade windows for the chapter break.
+const LIFE_FADE_OUT_MS = 1500;
+const LIFE_FADE_IN_MS = 1000;
 
 function ramp(x: number, from: number, to: number) {
   if (x <= from) return 0;
@@ -168,6 +208,33 @@ function ease(t: number) { return 1 - Math.pow(1 - t, 3); }
 function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
 function clamp01ish(x: number) { return Math.max(0.04, Math.min(0.96, x)); }
 function clampActual(x: number) { return Math.max(0.10, Math.min(0.92, x)); }
+function clampExpected(x: number) { return Math.max(EXPECTED_MIN, Math.min(EXPECTED_MIN + EXPECTED_RANGE, x)); }
+
+// Minimum change between consecutive same-axis values, so the figure never
+// shows two markers nearly on top of each other.
+const MIN_EXPECTED_DELTA = 0.12;
+const MIN_ACTUAL_DELTA = 0.12;
+
+/** Pick a new Expected position at least MIN_EXPECTED_DELTA away from prev. */
+function pickExpected(prev: number, r: () => number): number {
+  let candidate = EXPECTED_MIN + r() * EXPECTED_RANGE;
+  if (Math.abs(candidate - prev) < MIN_EXPECTED_DELTA) {
+    // Push it deterministically away from prev.
+    const room = EXPECTED_RANGE;
+    const direction =
+      prev - EXPECTED_MIN < room / 2 ? 1 : -1; // away from whichever side has more space
+    candidate = clampExpected(prev + direction * (MIN_EXPECTED_DELTA + r() * 0.16));
+  }
+  return candidate;
+}
+
+/** Pick a new Actual at least MIN_ACTUAL_DELTA away from prev, in the requested direction. */
+function pickActual(prev: number, direction: "short" | "long", r: () => number): number {
+  if (direction === "short") {
+    return clampActual(prev - (MIN_ACTUAL_DELTA + r() * 0.22));
+  }
+  return clampActual(prev + (MIN_ACTUAL_DELTA + r() * 0.22));
+}
 
 function rngStream(seed: number) {
   let s = (seed * 0x9E3779B1) >>> 0;
@@ -239,65 +306,36 @@ type EventEntry = {
   message: string;
 };
 
-function buildEvents() {
-  const r = rngStream(31);
+/**
+ * Build one life iteration's events from LIFE_STORY. Each event's
+ * Expected/Actual positions are resolved (Type A keeps prev actual; Type B
+ * keeps prev expected). The returned timeline is RELATIVE to the start of
+ * the life iteration (t=0 is the moment the life begins). Render uses
+ * `lifeRel = (elapsed - INTRO_DURATION) % oneLife.totalDuration` to look
+ * up the active event so each iteration is fresh.
+ */
+function buildOneLife(): { events: EventEntry[]; totalDuration: number } {
   const list: EventEntry[] = [];
-  // First event always starts after the intro completes.
-  let t = INTRO_DURATION_MS + 700;
+  let t = LIFE_FADE_IN_MS; // events start once the new life has faded in
   let prevExpected = EXPECTED_INITIAL;
   let prevActual = ACTUAL_INITIAL;
-  let lastType: EventType | null = null;
-
-  for (let i = 0; i < SCHEDULE_LEN; i++) {
-    // Pick a type, but avoid repeating the same type three times in a row.
-    let type: EventType;
-    const tr = r();
-    if (tr < 0.34) type = "A";
-    else if (tr < 0.70) type = "B";
-    else type = "C";
-    if (type === lastType && r() < 0.5) {
-      // Reroll once if same as last
-      const tr2 = r();
-      type = tr2 < 0.5 ? (type === "A" ? "B" : "A") : (type === "C" ? "B" : "C");
-    }
-    lastType = type;
-
-    let newExpected = prevExpected;
-    let newActual = prevActual;
-    let message = "";
-
-    if (type === "A") {
-      newExpected = EXPECTED_MIN + r() * EXPECTED_RANGE;
-      message = MESSAGES_A[Math.floor(r() * MESSAGES_A.length)];
-    } else if (type === "B") {
-      const direction = r() < 0.5 ? "short" : "long";
-      if (direction === "short") {
-        newActual = clampActual(prevActual - 0.10 - r() * 0.22);
-        message = MESSAGES_B_SHORT[Math.floor(r() * MESSAGES_B_SHORT.length)];
-      } else {
-        newActual = clampActual(prevActual + 0.08 + r() * 0.20);
-        message = MESSAGES_B_LONG[Math.floor(r() * MESSAGES_B_LONG.length)];
-      }
-    } else {
-      // C
-      newExpected = EXPECTED_MIN + r() * EXPECTED_RANGE;
-      const direction = r() < 0.5 ? "short" : "long";
-      if (direction === "short") {
-        newActual = clampActual(prevActual - 0.12 - r() * 0.20);
-        message = MESSAGES_C_SHORT[Math.floor(r() * MESSAGES_C_SHORT.length)];
-      } else {
-        newActual = clampActual(prevActual + 0.12 + r() * 0.20);
-        message = MESSAGES_C_LONG[Math.floor(r() * MESSAGES_C_LONG.length)];
-      }
-    }
-
-    list.push({ startMs: t, type, newExpected, newActual, message });
+  for (const entry of LIFE_STORY) {
+    const newExpected = entry.newExpected ?? prevExpected;
+    const newActual = entry.newActual ?? prevActual;
+    list.push({
+      startMs: t,
+      type: entry.type,
+      newExpected,
+      newActual,
+      message: entry.message,
+    });
     prevExpected = newExpected;
     prevActual = newActual;
-    const calm = CALM_MIN_MS + r() * CALM_RANGE_MS;
-    t += TYPE_PHASES[type].duration + calm;
+    t += TYPE_PHASES[entry.type].duration + CALM_BY_TYPE[entry.type];
   }
-  return list;
+  // Tail: time after the last event for the figure to settle, then fade out
+  // before the loop restarts.
+  return { events: list, totalDuration: t + LIFE_TAIL_MS };
 }
 
 export default function HorizonLoop() {
@@ -312,7 +350,9 @@ export default function HorizonLoop() {
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef(false);
 
-  const events = useMemo(() => buildEvents(), []);
+  const oneLife = useMemo(() => buildOneLife(), []);
+  const events = oneLife.events;
+  const lifeDuration = oneLife.totalDuration;
 
   // IntersectionObserver — start everything once the figure enters viewport.
   useEffect(() => {
@@ -400,24 +440,47 @@ export default function HorizonLoop() {
   const introStratBlock = ramp(elapsed, INTRO_PHASE.stratBlock[0], INTRO_PHASE.stratBlock[1]);
   const introDone = introT >= 1;
 
-  // Find active or last-completed event
+  // The biographic life loops endlessly. `lifeRel` is the time within the
+  // CURRENT life iteration (0 to lifeDuration). Each iteration is independent:
+  // the strategic-target scan and event lookup use this local time.
+  const lifeRel = introDone && !reducedRef.current
+    ? (elapsed - INTRO_DURATION_MS) % lifeDuration
+    : reducedRef.current
+      ? Math.floor(lifeDuration * 0.6) // settle mid-life under reduced motion
+      : 0;
+
+  // Soft chapter break — fade everything out at the end of a life and fade
+  // back in at the start of the next. Applies only to dynamic elements
+  // (markers, arrows, waves, banner); the figure's structural lines and
+  // headers stay stable.
+  let lifeFade = 1;
+  if (introDone && !reducedRef.current) {
+    const fadeOutStart = lifeDuration - LIFE_FADE_OUT_MS;
+    if (lifeRel >= fadeOutStart) {
+      lifeFade = 1 - (lifeRel - fadeOutStart) / LIFE_FADE_OUT_MS;
+    } else if (lifeRel < LIFE_FADE_IN_MS) {
+      lifeFade = lifeRel / LIFE_FADE_IN_MS;
+    }
+  }
+
+  // Find active or last-completed event WITHIN the current life iteration.
   let activeIdx = -1;
   let lastIdx = -1;
   if (introDone || reducedRef.current) {
     for (let i = 0; i < events.length; i++) {
       const e = events[i];
-      if (elapsed >= e.startMs && elapsed < e.startMs + TYPE_PHASES[e.type].duration) {
+      if (lifeRel >= e.startMs && lifeRel < e.startMs + TYPE_PHASES[e.type].duration) {
         activeIdx = i;
         break;
       }
-      if (elapsed >= e.startMs + TYPE_PHASES[e.type].duration) {
+      if (lifeRel >= e.startMs + TYPE_PHASES[e.type].duration) {
         lastIdx = i;
       }
     }
   }
   const activeEvent = activeIdx >= 0 ? events[activeIdx] : null;
   const lastEvent = lastIdx >= 0 ? events[lastIdx] : null;
-  const eventT = activeEvent ? elapsed - activeEvent.startMs : 0;
+  const eventT = activeEvent ? lifeRel - activeEvent.startMs : 0;
 
   // Resolve persistent positions
   let scheduledExpected: number;
@@ -550,27 +613,44 @@ export default function HorizonLoop() {
         ? 1
         : 0;
 
-  // Old influences arrow:
-  // - For C: anchored at lastEvent.newActual, fades per phase
-  // - For B: arrow's endpoint follows live actual (no old arrow)
-  // - For A: anchored at lastEvent.newActual (frozen)
-  // - Idle: anchored at lastEvent.newActual
-  let inkArrowAnchor: number | null = null;
-  let inkArrowAlpha = 0;
-  if (lastEvent) {
-    if (activeEvent && activeEvent.type === "C") {
-      inkArrowAnchor = lastEvent.newActual;
-      inkArrowAlpha = v.oldInfluencesAlpha;
-    } else if (activeEvent && activeEvent.type === "B") {
-      // The "old" ink arrow's endpoint follows actual as it eases — not frozen.
-      inkArrowAnchor = scheduledActual;
-      inkArrowAlpha = 1;
-    } else {
-      // A or idle: frozen at lastEvent.newActual
-      inkArrowAnchor = lastEvent.newActual;
-      inkArrowAlpha = 1;
+  // The persistent ink arrow points at the strategy's last committed belief
+  // about Actual — set ONLY by Type C events (a C event is the only thing
+  // that updates strategy's view of where Actual will land). Type B moves
+  // the actual marker without informing strategy, so the arrow's target
+  // stays frozen and the arrow goes dotted+faded as actual diverges from
+  // it. Type A doesn't touch actual at all.
+  //
+  // During an active Type C event, the OLD arrow points at the previous
+  // strategic target (frozen) while the NEW arrow draws to the active
+  // event's newActual.
+  let strategicTarget = ACTUAL_INITIAL;
+  // The "scan-up-to" index is lastIdx (most recent COMPLETED event); for an
+  // in-flight Type C the strategic target hasn't yet committed to its new
+  // value, so we scan the same range either way.
+  for (let i = lastIdx; i >= 0; i--) {
+    if (events[i].type === "C") {
+      strategicTarget = events[i].newActual;
+      break;
     }
   }
+  // Divergence: how far has actual drifted from the strategy's belief?
+  const divergence = Math.abs(actualNorm - strategicTarget);
+  // Smooth crossfade factor: 0 (fully solid) at divergence ≤ 0.02, 1 (fully
+  // dotted+faded) at divergence ≥ 0.07. The transition takes one Type B
+  // actual-ease worth of motion to fully cross over.
+  const divergenceFactor = Math.max(0, Math.min(1, (divergence - 0.02) / 0.05));
+  const inkSolidAlpha = 1 - divergenceFactor;
+  const inkDottedAlpha = divergenceFactor * 0.55;
+  // Combined arrowhead opacity (so the head fades from full ink to a
+  // muted ink as the arrow goes dotted).
+  const inkHeadAlpha = inkSolidAlpha + inkDottedAlpha;
+
+  // For an active Type C event, the persistent (old) arrow gets an additional
+  // fade based on oldInfluencesFade — multiplied with the divergence
+  // crossfade above.
+  const oldInfluencesFadeAlpha = activeEvent && activeEvent.type === "C"
+    ? v.oldInfluencesAlpha
+    : 1;
 
   // Banner state
   const bannerEvent = activeEvent ?? lastEvent;
@@ -640,9 +720,12 @@ export default function HorizonLoop() {
             className="hl-line-expected"
             opacity={introSplit}
           />
+          {/* Labels offset clearly off their lines so the text doesn't
+              cross the line's y-band. ACTUAL floats above its line at the
+              right end, EXPECTED floats below. */}
           <text
             x={LINE_X2 + 10}
-            y={ACTUAL_Y + 4}
+            y={ACTUAL_Y - 10}
             className="hl-line-label hl-line-label--strong"
             opacity={introLineLabels}
           >
@@ -650,7 +733,7 @@ export default function HorizonLoop() {
           </text>
           <text
             x={LINE_X2 + 10}
-            y={EXPECTED_Y + 4}
+            y={EXPECTED_Y + 12}
             className="hl-line-label"
             opacity={introLineLabels}
           >
@@ -677,7 +760,7 @@ export default function HorizonLoop() {
               fill="none"
               stroke="#1e3a8a"
               strokeWidth="1.2"
-              opacity={v.stratPulse.opacity}
+              opacity={v.stratPulse.opacity * lifeFade}
             />
           )}
 
@@ -691,7 +774,7 @@ export default function HorizonLoop() {
               fill="none"
               stroke="#1e3a8a"
               strokeWidth="1.2"
-              opacity={w.opacity}
+              opacity={w.opacity * lifeFade}
             />
           ))}
 
@@ -705,7 +788,7 @@ export default function HorizonLoop() {
               fill="none"
               stroke="#0a0a0a"
               strokeWidth="1.2"
-              opacity={w.opacity}
+              opacity={w.opacity * lifeFade}
             />
           ))}
 
@@ -715,7 +798,7 @@ export default function HorizonLoop() {
               <path
                 d={buildInformsPath(oldInformsAnchor, 1)}
                 className="hl-arc-informs-blue"
-                opacity={oldInformsAlphaResolved}
+                opacity={oldInformsAlphaResolved * lifeFade}
               />
               <ArrowTip
                 x={INFORMS_END_X}
@@ -723,7 +806,7 @@ export default function HorizonLoop() {
                 targetX={STRAT_NODE_X}
                 targetY={STRAT_NODE_Y}
                 color="#1e3a8a"
-                opacity={oldInformsAlphaResolved}
+                opacity={oldInformsAlphaResolved * lifeFade}
               />
             </>
           )}
@@ -734,6 +817,7 @@ export default function HorizonLoop() {
               <path
                 d={buildInformsPath(activeEvent.newExpected, v.informsT)}
                 className="hl-arc-informs-blue"
+                opacity={lifeFade}
               />
               {v.informsT >= 0.99 && (
                 <ArrowTip
@@ -742,27 +826,47 @@ export default function HorizonLoop() {
                   targetX={STRAT_NODE_X}
                   targetY={STRAT_NODE_Y}
                   color="#1e3a8a"
+                  opacity={lifeFade}
                 />
               )}
             </>
           )}
 
-          {/* Persistent ink influences arrow */}
-          {introDone && inkArrowAnchor !== null && inkArrowAlpha > 0 && (
+          {/* Persistent ink influences arrow — at the strategic target.
+              Solid + dotted variants crossfade based on divergence: when
+              actual drifts away from strategy's belief (Type B), arrow
+              goes dotted+faded; when strategy catches up (Type C
+              completes), arrow snaps back to solid. */}
+          {introDone && (
             <>
-              <path
-                d={buildInfluencesPath(inkArrowAnchor, 1)}
-                className="hl-arc-influences-ink"
-                opacity={inkArrowAlpha}
-              />
-              <ArrowTip
-                x={LINE_X1 + inkArrowAnchor * LINE_W}
-                y={ACTUAL_Y - INFL_END_DY}
-                targetX={LINE_X1 + inkArrowAnchor * LINE_W}
-                targetY={ACTUAL_Y}
-                color="#0a0a0a"
-                opacity={inkArrowAlpha}
-              />
+              {inkSolidAlpha * oldInfluencesFadeAlpha > 0.02 && (
+                <path
+                  d={buildInfluencesPath(strategicTarget, 1)}
+                  className="hl-arc-influences-ink"
+                  opacity={inkSolidAlpha * oldInfluencesFadeAlpha * lifeFade}
+                />
+              )}
+              {inkDottedAlpha * oldInfluencesFadeAlpha > 0.02 && (
+                <path
+                  d={buildInfluencesPath(strategicTarget, 1)}
+                  fill="none"
+                  stroke="#0a0a0a"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray="0.1 8"
+                  opacity={inkDottedAlpha * oldInfluencesFadeAlpha * lifeFade}
+                />
+              )}
+              {inkHeadAlpha * oldInfluencesFadeAlpha > 0.02 && (
+                <ArrowTip
+                  x={LINE_X1 + strategicTarget * LINE_W}
+                  y={ACTUAL_Y - INFL_END_DY}
+                  targetX={LINE_X1 + strategicTarget * LINE_W}
+                  targetY={ACTUAL_Y}
+                  color="#0a0a0a"
+                  opacity={inkHeadAlpha * oldInfluencesFadeAlpha * lifeFade}
+                />
+              )}
             </>
           )}
 
@@ -772,6 +876,7 @@ export default function HorizonLoop() {
               <path
                 d={buildInfluencesPath(activeEvent.newActual, v.influencesT)}
                 className="hl-arc-influences-ink"
+                opacity={lifeFade}
               />
               {v.influencesT >= 0.99 && (
                 <ArrowTip
@@ -780,6 +885,7 @@ export default function HorizonLoop() {
                   targetX={LINE_X1 + activeEvent.newActual * LINE_W}
                   targetY={ACTUAL_Y}
                   color="#0a0a0a"
+                  opacity={lifeFade}
                 />
               )}
             </>
@@ -794,7 +900,7 @@ export default function HorizonLoop() {
               fill="none"
               stroke="#0a0a0a"
               strokeWidth="1.2"
-              opacity={v.landingFlash.opacity}
+              opacity={v.landingFlash.opacity * lifeFade}
             />
           )}
 
@@ -804,7 +910,7 @@ export default function HorizonLoop() {
               "hl-expected-marker" +
               (hovered || isDragging ? " hl-expected-marker--active" : "")
             }
-            opacity={introSplit}
+            opacity={introSplit * lifeFade}
           >
             <circle
               cx={expectedX}
@@ -842,7 +948,7 @@ export default function HorizonLoop() {
           </g>
 
           {/* Actual pin */}
-          <g opacity={introSplit}>
+          <g opacity={introSplit * lifeFade}>
             <line
               x1={actualX}
               y1={ACTUAL_Y - 12}
@@ -860,7 +966,7 @@ export default function HorizonLoop() {
               y={BANNER_Y}
               textAnchor="middle"
               className="hl-banner"
-              opacity={bannerAlpha}
+              opacity={bannerAlpha * lifeFade}
             >
               {bannerDisplayText}
             </text>

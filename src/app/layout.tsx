@@ -46,7 +46,7 @@ export default function RootLayout({
         <nav className="top">
           <Link href="/" className="brand">
             <img src="/logo/logo-black.png" alt="" className="dot" />
-            <span>Index</span>
+            <span>Vector</span>
           </Link>
           <div className="links">
             <Link className="link" href="/#topics">Topics</Link>

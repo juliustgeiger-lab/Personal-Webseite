@@ -45,7 +45,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <nav className="top">
           <Link href="/" className="brand">
-            <span className="dot">※</span>
+            <img src="/logo/logo-black.png" alt="" className="dot" />
             <span>Index</span>
           </Link>
           <div className="links">

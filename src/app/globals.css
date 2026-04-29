@@ -119,13 +119,38 @@ nav.top .brand .dot {
   display: inline-block;
 }
 
+.footer-monkey-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 180px;
+  align-self: start;
+}
+
 .footer-monkey {
   display: block;
   width: 100%;
-  max-width: 140px;
   height: auto;
-  margin-top: 16px;
+  transition: opacity 320ms ease;
+}
+
+.footer-monkey--base {
   opacity: 0.9;
+}
+
+.footer-monkey--glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.footer-monkey-wrap:hover .footer-monkey--base {
+  opacity: 1;
+}
+
+.footer-monkey-wrap:hover .footer-monkey--glow {
+  opacity: 1;
 }
 
 nav.top .links {
@@ -228,9 +253,9 @@ main.home {
 
 .hero-headline {
   font-family: var(--font-geist-sans), "Geist", sans-serif;
-  font-weight: 500;
-  font-size: clamp(52px, 8.4vw, 128px);
-  line-height: 1.02;
+  font-weight: 700;
+  font-size: clamp(60px, 9.7vw, 152px);
+  line-height: 1;
   letter-spacing: -0.035em;
   color: var(--ink);
   max-width: 16ch;
@@ -250,7 +275,7 @@ main.home {
   border: 0;
   padding: 8px;
   cursor: pointer;
-  color: var(--ink-soft);
+  color: #1e3a8a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -265,20 +290,25 @@ main.home {
 }
 
 .scroll-cue:hover {
-  color: var(--ink);
+  color: #1e3a8a;
 }
 
 .scroll-cue__arrow {
   width: 34px;
   height: 34px;
   display: block;
-  animation: scroll-cue-pulse 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  opacity: 0.85;
+  animation: scroll-cue-pulse 3s ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 3px rgba(30, 58, 138, 0.55))
+    drop-shadow(0 0 9px rgba(30, 58, 138, 0.32))
+    drop-shadow(0 0 20px rgba(30, 58, 138, 0.18));
 }
 
 @keyframes scroll-cue-pulse {
-  0%   { transform: translateY(0); opacity: 0.35; }
-  50%  { transform: translateY(8px); opacity: 1; }
-  100% { transform: translateY(0); opacity: 0.35; }
+  0%   { transform: translateY(0); opacity: 0.3; }
+  50%  { transform: translateY(8px); opacity: 0.85; }
+  100% { transform: translateY(0); opacity: 0.3; }
 }
 
 .hero-headline .line { display: block; }
@@ -1089,9 +1119,15 @@ footer.site {
 }
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr;
   gap: 40px;
   margin-bottom: 60px;
+}
+
+.footer-lede {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
 }
 .footer-grid h3 {
   font-family: var(--font-geist-sans), "Geist", sans-serif;
@@ -1140,6 +1176,21 @@ footer.site {
   border-top: 1px solid var(--rule);
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-bottom-links a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.footer-bottom-links a:hover {
+  color: var(--ink);
 }
 
 /* ===== FUTURES SIMULATION (embedded in futures-of-decisions blog post) ===== */
@@ -1731,32 +1782,14 @@ footer.site {
 
 /* ===== Author portraits ===== */
 
-/* ===== About page (scoped dark theme + editorial split layout) ===== */
-
-body:has(.about-root) {
-  --bg: #161616;
-  --ink: #ffffff;
-  --ink-2: #ffffff;
-  --ink-soft: #BFBFBF;
-  --ink-faint: #6b6b6b;
-  --rule: #2a2a2a;
-  --rule-2: #222222;
-  background: var(--bg);
-  color: var(--ink);
-}
-
-body:has(.about-root) nav.top {
-  background: rgba(22, 22, 22, 0.72);
-}
-
-body:has(.about-root) nav.top .brand .dot {
-  content: url("/logo/logo-white.png");
-}
+/* ===== About page (editorial split layout) ===== */
 
 .about-root {
+  position: relative;
+  z-index: 2;
   min-height: 100vh;
-  background: #161616;
-  color: #BFBFBF;
+  background: var(--bg);
+  color: var(--ink-soft);
 }
 
 .about-grid {
@@ -1770,14 +1803,23 @@ body:has(.about-root) nav.top .brand .dot {
   padding: 160px clamp(32px, 6vw, 96px) 96px clamp(32px, 9vw, 144px);
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .about-rule {
   display: block;
+  position: relative;
   width: 100%;
   height: 2px;
-  background: #FF5A1F;
+  background: var(--highlight);
   margin-bottom: 28px;
+  z-index: 3;
+}
+
+@media (min-width: 900px) {
+  .about-rule {
+    width: calc(62vw - clamp(32px, 9vw, 144px));
+  }
 }
 
 .about-title {
@@ -1786,7 +1828,7 @@ body:has(.about-root) nav.top .brand .dot {
   font-size: clamp(72px, 11vw, 160px);
   line-height: 0.95;
   letter-spacing: -0.02em;
-  color: #ffffff;
+  color: var(--ink);
   text-transform: uppercase;
   margin: 0 0 28px;
 }
@@ -1796,15 +1838,15 @@ body:has(.about-root) nav.top .brand .dot {
   font-weight: 700;
   font-size: clamp(20px, 1.6vw, 24px);
   line-height: 1.35;
-  color: #ffffff;
+  color: var(--ink);
   margin: 0 0 32px;
-  max-width: 28ch;
+  max-width: 32ch;
 }
 
 .about-body p {
   font-size: 17px;
   line-height: 1.65;
-  color: #BFBFBF;
+  color: var(--ink-soft);
   margin: 0 0 20px;
   max-width: 64ch;
 }
@@ -1814,9 +1856,13 @@ body:has(.about-root) nav.top .brand .dot {
 }
 
 .about-photo {
-  position: relative;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  width: 100%;
+  height: 100vh;
   overflow: hidden;
-  background: #0e0e0e;
+  background: var(--rule-2);
 }
 
 .about-photo img {
@@ -1824,7 +1870,7 @@ body:has(.about-root) nav.top .brand .dot {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 25%;
+  object-position: center 22%;
 }
 
 @media (max-width: 900px) {
@@ -1834,6 +1880,7 @@ body:has(.about-root) nav.top .brand .dot {
     min-height: 0;
   }
   .about-photo {
+    position: static;
     order: -1;
     aspect-ratio: 16 / 10;
     height: auto;
@@ -1925,7 +1972,7 @@ body:has(.about-root) nav.top .brand .dot {
   .hero-rail { grid-template-columns: repeat(2, 1fr); }
   .work-grid, .principles-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
-  .footer-grid h3 { grid-column: 1 / -1; }
+  .footer-lede { grid-column: 1 / -1; }
   section.work, section.principles { padding-left: 20px; padding-right: 20px; }
   .footer-inner { padding: 60px 20px 30px; }
   .page-wrap { padding: 120px 20px 60px; }

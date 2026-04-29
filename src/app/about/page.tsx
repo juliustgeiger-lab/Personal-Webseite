@@ -1,3 +1,5 @@
+import PossibleFutures from "@/components/figures/PossibleFutures";
+
 export const metadata = {
   title: "About — Julius",
 };
@@ -10,8 +12,12 @@ export default function About() {
           <span className="about-rule" aria-hidden="true" />
           <h1 className="about-title">ABOUT.</h1>
           <p className="about-subtitle">
-            I&apos;m passionate about innovation and driven by impact.
+            I&apos;m passionate about hard decisions and driven by the futures
+            they shape.
           </p>
+          <div style={{ marginTop: "-24px", marginBottom: "20px" }}>
+            <PossibleFutures theme="light" />
+          </div>
           <div className="about-body">
             <p>
               Most decisions get made as if the future could be predicted. I find that
@@ -53,6 +59,11 @@ export default function About() {
               everything that came after. It became a master thesis and still shapes my
               writing here.
             </p>
+            <div
+              aria-hidden="true"
+              className="my-10"
+              style={{ width: "100%", aspectRatio: "680 / 360" }}
+            />
           </div>
         </div>
         <div className="about-photo">

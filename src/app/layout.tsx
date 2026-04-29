@@ -63,10 +63,24 @@ export default function RootLayout({
         <footer className="site" id="subscribe">
           <div className="footer-inner">
             <div className="footer-grid">
-              <div>
+              <div className="footer-lede">
                 <h3>
-                  Get the next essay in your <a href="mailto:hello@example.com">inbox →</a>
+                  Get the next<br />
+                  essay in your<br />
+                  <a href="mailto:hello@example.com">inbox →</a>
                 </h3>
+                <div className="footer-monkey-wrap" aria-hidden="true">
+                  <img
+                    src="/Grafics/Monkey%20White.png"
+                    alt=""
+                    className="footer-monkey footer-monkey--base"
+                  />
+                  <img
+                    src="/Grafics/monkey_glowing_eyes.png"
+                    alt=""
+                    className="footer-monkey footer-monkey--glow"
+                  />
+                </div>
               </div>
               <div className="col">
                 <span className="mono-up">Subscribe</span>
@@ -78,28 +92,18 @@ export default function RootLayout({
                 </a>
               </div>
               <div className="col">
-                <span className="mono-up">Elsewhere</span>
-                <a className="link" href="#">X / Twitter <span className="arr">↗</span></a>
-                <a className="link" href="#">LinkedIn <span className="arr">↗</span></a>
-                <a className="link" href="#">GitHub <span className="arr">↗</span></a>
-              </div>
-              <div className="col">
                 <span className="mono-up">Index</span>
                 <Link className="link" href="/writing">All essays <span className="arr">→</span></Link>
                 <Link className="link" href="/#topics">Topics <span className="arr">→</span></Link>
                 <Link className="link" href="/about">About <span className="arr">→</span></Link>
-                <Link className="link" href="/imprint">Imprint <span className="arr">→</span></Link>
-                <Link className="link" href="/privacy">Privacy <span className="arr">→</span></Link>
-                <img
-                  src="/Grafics/Monkey%20White.png"
-                  alt=""
-                  className="footer-monkey"
-                />
               </div>
             </div>
             <div className="footer-bottom">
-              <span className="mono-up">© {new Date().getFullYear()} — Julius</span>
-              <span className="mono-up">Set in Geist &amp; JetBrains Mono</span>
+              <span className="mono-up">© Vector — Julius T. Geiger {new Date().getFullYear()}. All rights reserved.</span>
+              <div className="footer-bottom-links">
+                <Link className="mono-up" href="/imprint">Imprint</Link>
+                <Link className="mono-up" href="/privacy">Privacy</Link>
+              </div>
             </div>
           </div>
         </footer>

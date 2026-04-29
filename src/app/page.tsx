@@ -17,10 +17,22 @@ export default function Home() {
       <ManyWorldsSection />
 
       <section className="work" id="essays">
+        <div className="essays-landing-hero">
+          <div className="essays-landing-text">
+            <span className="essays-landing-rule" aria-hidden="true" />
+            <h2 className="essays-landing-title">ESSAYS</h2>
+          </div>
+          <div className="essays-landing-photo">
+            <img
+              src="/pictures-website/Vector-Essays-0.png"
+              alt="Julius at his desk, mid-throw of a balled-up sheet of paper."
+            />
+          </div>
+        </div>
+
         <div className="section-head">
           <div className="title-block">
-            <span className="mono-up kicker">§ 01 — Recent essays</span>
-            <h2>Latest Notes on:</h2>
+            <span className="mono-up kicker kicker--lg">Recent ones</span>
           </div>
           <div className="meta">
             <span className="mono-up">
@@ -81,9 +93,6 @@ export default function Home() {
             })}
           </div>
         )}
-        <Link href="/writing" className="work-cta">
-          All essays <span className="arrow" aria-hidden="true">→</span>
-        </Link>
       </section>
 
       <section className="principles" id="topics">
@@ -92,7 +101,7 @@ export default function Home() {
           style={{ marginBottom: 0, borderBottom: 0, paddingBottom: 0 }}
         >
           <div className="title-block">
-            <span className="mono-up kicker">§ 02 — What I&apos;m thinking about</span>
+            <span className="mono-up kicker kicker--lg">What I&apos;m thinking about</span>
             <h2>Three lenses I keep returning to.</h2>
           </div>
         </div>

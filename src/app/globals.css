@@ -153,6 +153,37 @@ nav.top .brand .dot {
   opacity: 1;
 }
 
+.footer-monkey-caption {
+  position: absolute;
+  top: 38%;
+  left: calc(100% - 14px);
+  display: inline-block;
+  font-family: var(--font-geist-sans), "Geist", sans-serif;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+/* Glitch layers stay hidden until the user hovers the monkey wrap.
+   Same gating model as the "uncertain" word on the home page, just
+   keyed off the wrap instead of the word's own :hover. */
+.footer-monkey-caption .ucg__channel,
+.footer-monkey-caption .ucg__main,
+.footer-monkey-caption .ucg__slice {
+  visibility: hidden;
+}
+
+.footer-monkey-wrap:hover .footer-monkey-caption .ucg__channel,
+.footer-monkey-wrap:hover .footer-monkey-caption .ucg__main,
+.footer-monkey-wrap:hover .footer-monkey-caption .ucg__slice {
+  visibility: visible;
+}
+
 nav.top .links {
   display: flex;
   gap: 4px;
@@ -906,6 +937,58 @@ section.work {
   scroll-margin-top: 80px;
 }
 
+.essays-landing-hero {
+  display: grid;
+  grid-template-columns: 55fr 45fr;
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 48px;
+}
+
+.essays-landing-rule {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #1e3a8a;
+  margin-bottom: 22px;
+}
+
+.essays-landing-title {
+  font-family: var(--font-geist-sans), "Geist", sans-serif;
+  font-weight: 800;
+  font-size: clamp(56px, 8vw, 128px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.essays-landing-photo {
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--rule-2);
+}
+
+.essays-landing-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+@media (max-width: 900px) {
+  .essays-landing-hero {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .essays-landing-photo {
+    aspect-ratio: 16 / 10;
+  }
+}
+
 .section-head {
   display: flex;
   justify-content: space-between;
@@ -922,6 +1005,15 @@ section.work {
   color: var(--ink);
 }
 .section-head .title-block .kicker { display: block; margin-bottom: 6px; }
+
+.section-head .title-block .kicker--lg {
+  font-size: clamp(22px, 2.4vw, 36px);
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  font-weight: 500;
+  margin-bottom: 0;
+  line-height: 1.15;
+}
 .section-head .meta { text-align: right; }
 
 .work-grid {
@@ -1119,7 +1211,7 @@ footer.site {
 }
 .footer-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 1fr auto auto;
   gap: 40px;
   margin-bottom: 60px;
 }
@@ -1811,7 +1903,7 @@ footer.site {
   position: relative;
   width: 100%;
   height: 2px;
-  background: var(--highlight);
+  background: #1e3a8a;
   margin-bottom: 28px;
   z-index: 3;
 }
@@ -1890,6 +1982,146 @@ footer.site {
   }
   .about-title {
     font-size: clamp(48px, 14vw, 96px);
+  }
+}
+
+/* ===== Essays grid (rendered inside the split layout) ===== */
+
+.essays-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.essays-card {
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--bg);
+  overflow: hidden;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.essays-card:hover {
+  border-color: var(--ink-faint);
+  transform: translateY(-2px);
+}
+
+.essays-card-link {
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+  height: 100%;
+}
+
+.essays-card-thumb {
+  aspect-ratio: 200 / 120;
+  width: 100%;
+  border-bottom: 1px solid var(--rule);
+  background: var(--rule-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 14px;
+}
+
+.essays-card-thumb svg,
+.essays-card-thumb .hd-glyph {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.essays-card-thumb-fallback {
+  color: var(--ink-faint);
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+
+.essays-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px 18px;
+  flex: 1;
+}
+
+.essays-card-date {
+  display: block;
+  color: var(--ink-faint);
+  margin: 0;
+}
+
+.essays-card-title {
+  font-family: var(--font-geist-sans), "Geist", sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0;
+  transition: color 180ms ease;
+}
+
+.essays-card:hover .essays-card-title {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+}
+
+.essays-card-excerpt {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.essays-card-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.essays-card-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--ink-faint);
+}
+
+.essays-card-time-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.essays-card-tag {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+  border-radius: 100px;
+  padding: 3px 9px;
+}
+
+.essays-empty {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  color: var(--ink-faint);
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .essays-grid {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -10,10 +10,10 @@ export default function About() {
       <div className="about-grid">
         <div className="about-text">
           <span className="about-rule" aria-hidden="true" />
-          <h1 className="about-title">ABOUT.</h1>
+          <h1 className="about-title">ABOUT</h1>
           <p className="about-subtitle">
-            I&apos;m passionate about hard decisions and driven by the futures
-            they shape.
+            I&apos;m passionate about decisions and driven by the futures they
+            shape.
           </p>
           <div style={{ marginTop: "-24px", marginBottom: "20px" }}>
             <PossibleFutures theme="light" />

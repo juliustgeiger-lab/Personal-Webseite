@@ -93,12 +93,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         />
         <div className="post-author__meta">
           <p className="post-author__name">Julius T. Geiger</p>
-          <p className="post-author__tagline">
-            Reach out at:{" "}
-            <a href="mailto:julius.t.geiger@gmail.com">
-              julius.t.geiger@gmail.com
-            </a>
-          </p>
           <Link href="/about" className="post-author__link">
             About me <span aria-hidden="true">→</span>
           </Link>

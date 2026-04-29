@@ -2,7 +2,6 @@ export const metadata = {
   title: "Imprint — Julius",
 };
 
-// TODO before go-live: replace every [BRACKETED] placeholder with real data.
 // Legal basis (Austria): ECG §5, Mediengesetz §24 & §25, UGB §14.
 
 export default function Imprint() {
@@ -15,21 +14,19 @@ export default function Imprint() {
           Publisher and responsible for the content
         </h2>
         <p>
-          Julius [LASTNAME]<br />
-          [STREET AND NUMBER]<br />
-          [ZIP] [CITY]<br />
+          Julius T. Geiger<br />
+          Esterhaygasse 18/15<br />
+          1060 Vienna<br />
           Austria
         </p>
         <p>
           Email:{" "}
           <a
-            href="mailto:[EMAIL]"
+            href="mailto:julius.geiger.pm@gmail.com"
             className="underline underline-offset-4 decoration-zinc-400"
           >
-            [EMAIL]
+            julius.geiger.pm@gmail.com
           </a>
-          <br />
-          Phone: [OPTIONAL PHONE]
         </p>
       </section>
 

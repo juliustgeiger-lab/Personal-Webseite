@@ -1731,32 +1731,118 @@ footer.site {
 
 /* ===== Author portraits ===== */
 
-/* About page — small magazine-style portrait floated alongside the opening
-   paragraph. shape-outside: circle() makes the prose wrap to the circular
-   edge instead of a rectangular bounding box, which is what sells the
-   editorial look. Sized small so it accents rather than dominates the
-   page; when a more expressive headshot replaces this placeholder, only
-   the <img src=…> needs to change. */
-.about-portrait {
-  float: left;
-  width: 150px;
-  height: 150px;
-  margin: 4px 22px 6px 0;
-  border-radius: 50%;
-  object-fit: cover;
-  shape-outside: circle();
+/* ===== About page (scoped dark theme + editorial split layout) ===== */
+
+body:has(.about-root) {
+  --bg: #161616;
+  --ink: #ffffff;
+  --ink-2: #ffffff;
+  --ink-soft: #BFBFBF;
+  --ink-faint: #6b6b6b;
+  --rule: #2a2a2a;
+  --rule-2: #222222;
+  background: var(--bg);
+  color: var(--ink);
 }
 
-/* On narrow screens the float crams the first paragraph against the edge.
-   Drop to a centred block above the prose — still subtle, no longer crowded. */
-@media (max-width: 600px) {
-  .about-portrait {
-    float: none;
-    display: block;
-    width: 130px;
-    height: 130px;
-    margin: 0 auto 12px;
-    shape-outside: none;
+body:has(.about-root) nav.top {
+  background: rgba(22, 22, 22, 0.72);
+}
+
+body:has(.about-root) nav.top .brand .dot {
+  content: url("/logo/logo-white.png");
+}
+
+.about-root {
+  min-height: 100vh;
+  background: #161616;
+  color: #BFBFBF;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 55fr 45fr;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.about-text {
+  padding: 160px clamp(32px, 6vw, 96px) 96px clamp(32px, 9vw, 144px);
+  display: flex;
+  flex-direction: column;
+}
+
+.about-rule {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #FF5A1F;
+  margin-bottom: 28px;
+}
+
+.about-title {
+  font-family: var(--font-geist-sans), "Geist", sans-serif;
+  font-weight: 800;
+  font-size: clamp(72px, 11vw, 160px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  text-transform: uppercase;
+  margin: 0 0 28px;
+}
+
+.about-subtitle {
+  font-family: var(--font-geist-sans), "Geist", sans-serif;
+  font-weight: 700;
+  font-size: clamp(20px, 1.6vw, 24px);
+  line-height: 1.35;
+  color: #ffffff;
+  margin: 0 0 32px;
+  max-width: 28ch;
+}
+
+.about-body p {
+  font-size: 17px;
+  line-height: 1.65;
+  color: #BFBFBF;
+  margin: 0 0 20px;
+  max-width: 64ch;
+}
+
+.about-body p:last-child {
+  margin-bottom: 0;
+}
+
+.about-photo {
+  position: relative;
+  overflow: hidden;
+  background: #0e0e0e;
+}
+
+.about-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+}
+
+@media (max-width: 900px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    min-height: 0;
+  }
+  .about-photo {
+    order: -1;
+    aspect-ratio: 16 / 10;
+    height: auto;
+  }
+  .about-text {
+    padding: 56px 24px 72px;
+  }
+  .about-title {
+    font-size: clamp(48px, 14vw, 96px);
   }
 }
 

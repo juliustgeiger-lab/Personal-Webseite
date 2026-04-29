@@ -2,9 +2,13 @@ export const metadata = {
   title: "Privacy — Julius",
 };
 
-// TODO before go-live: replace [BRACKETED] placeholders and confirm hosting details.
 // This template assumes: no analytics, no cookies, no forms, static site hosted on Vercel.
 // If you add analytics, forms, or cookies later, update this page accordingly.
+
+const lastUpdated = new Date().toLocaleDateString("en-US", {
+  month: "long",
+  year: "numeric",
+});
 
 export default function Privacy() {
   return (
@@ -17,16 +21,16 @@ export default function Privacy() {
         </h2>
         <p>
           The controller within the meaning of the GDPR is:<br />
-          Julius [LASTNAME]<br />
-          [STREET AND NUMBER]<br />
-          [ZIP] [CITY]<br />
+          Julius T. Geiger<br />
+          Esterhaygasse 18/15<br />
+          1060 Vienna<br />
           Austria<br />
           Email:{" "}
           <a
-            href="mailto:[EMAIL]"
+            href="mailto:julius.geiger.pm@gmail.com"
             className="underline underline-offset-4 decoration-zinc-400"
           >
-            [EMAIL]
+            julius.geiger.pm@gmail.com
           </a>
         </p>
       </section>
@@ -36,8 +40,18 @@ export default function Privacy() {
           2. Overview
         </h2>
         <p>
-          This is a static personal website. There are no sign-ups, no forms, and no
-          tracking cookies.
+          This is a static personal website. The personal data processed through this
+          site is limited to what is described in the sections below: technical data
+          required to deliver the site (Section 3), cookies if and when they are set
+          (Section 4), and any data you provide when you contact me by email
+          (Section 5).
+        </p>
+        <p>
+          If additional processing is introduced in the future — for example a
+          newsletter sign-up, a contact form, web analytics, or embedded third-party
+          content — this policy will be updated before such processing begins and a
+          dedicated section will be added below describing the purpose, legal basis,
+          recipients, retention, and any third-country transfers involved.
         </p>
       </section>
 
@@ -128,7 +142,7 @@ export default function Privacy() {
         </h2>
         <p>
           This policy will be updated if data processing changes (e.g. when analytics
-          or forms are added). Last updated: [DATE].
+          or forms are added). Last updated: {lastUpdated}.
         </p>
       </section>
     </main>

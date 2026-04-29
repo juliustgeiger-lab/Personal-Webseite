@@ -112,12 +112,20 @@ nav.top .brand {
   color: var(--ink);
   text-decoration: none;
 }
-/* brand logo */
 nav.top .brand .dot {
   width: 24px;
   height: 24px;
   object-fit: contain;
   display: inline-block;
+}
+
+.footer-monkey {
+  display: block;
+  width: 100%;
+  max-width: 140px;
+  height: auto;
+  margin-top: 16px;
+  opacity: 0.9;
 }
 
 nav.top .links {

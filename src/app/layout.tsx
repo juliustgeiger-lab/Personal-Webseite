@@ -90,6 +90,11 @@ export default function RootLayout({
                 <Link className="link" href="/about">About <span className="arr">→</span></Link>
                 <Link className="link" href="/imprint">Imprint <span className="arr">→</span></Link>
                 <Link className="link" href="/privacy">Privacy <span className="arr">→</span></Link>
+                <img
+                  src="/Grafics/Monkey%20White.png"
+                  alt=""
+                  className="footer-monkey"
+                />
               </div>
             </div>
             <div className="footer-bottom">
